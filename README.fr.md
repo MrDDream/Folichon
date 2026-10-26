@@ -43,6 +43,7 @@ Folichon, c'est une seule page qui raconte ton histoire (qui tu es, ce que tu co
 | ✏️ **Éditeur intégré**           | Tous les textes, liens, couleurs et images se modifient dans le navigateur, avec des listes réordonnables, l'annulation d'une suppression et une protection contre l'écrasement d'une version plus récente. |
 | 🔐 **Sécurisé**                  | Administration à une adresse secrète, mot de passe **et** double authentification, essais limités, sessions révocables, en-têtes de sécurité stricts.                                                       |
 | 🌗 **Clair et sombre**           | Suit le système, avec un bouton sur la page et dans l'éditeur.                                                                                                                                              |
+| 🎨 **7 thèmes, tes polices**     | Folichon, Magazine, Terminal, Rétro, Néon, Pop ou CV sobre : chacun change la mise en page, pas seulement les couleurs. Une police pour les titres et le texte, ou la tienne en fichier.                    |
 | 📱 **Pensé mobile**              | Menu collant, mise en page compacte, menu de partage du téléphone.                                                                                                                                          |
 | 🌍 **Français et anglais**       | La page et l'éditeur parlent les deux.                                                                                                                                                                      |
 | 🪶 **Léger**                     | Un seul conteneur, pas de base de données, aucune ressource externe : polices servies par le site, images en WebP.                                                                                          |
@@ -126,6 +127,7 @@ Pour construire l'image toi-même : clone le dépôt, `cp .env.example .env`, pu
 - **Listes** : ajoute, supprime et réordonne les éléments avec les flèches ↑ ↓.
 - **Images** : bouton « Envoyer une image » ou un lien `https://…`.
 - **Couleurs** : chaque grand projet a son propre jeu de couleurs.
+- **Thème et polices** (Haut de page › Réglages du site) : 7 thèmes qui changent la mise en page et le style de la page publique ; le mode clair/sombre et la couleur d'accent restent les tiens. Une police pour les titres, une pour le texte : une fournie (Bricolage Grotesque, Inter, JetBrains Mono), une famille déjà installée sur les appareils (serif, arrondie, manuscrite…) ou ton propre fichier (WOFF2, WOFF, TTF ou OTF), servi par ton serveur. Vérifie que sa licence autorise l'usage sur un site.
 - **Accroche** : les mots entre astérisques prennent la couleur d'accent, par exemple `Je fabrique des *apps Android*`.
 - **Enregistrer** (ou Ctrl/Cmd + S) : la page publique est à jour immédiatement ; la version précédente est gardée dans `data/content.backup.json`. Si le contenu a changé ailleurs (autre onglet), l'enregistrement est refusé au lieu de l'écraser.
 - **Exporter / Importer** : sauvegarde ou restaure tout le contenu en un fichier JSON.

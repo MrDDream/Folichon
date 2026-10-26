@@ -691,6 +691,17 @@ footer.site-footer p { margin: 0; }
 :root[data-style="cv"] .contact h2 { text-transform: none; font-size: 24px; }
 :root[data-style="cv"] .btn-outline { color: var(--c-ink); border-color: var(--c-ink); }
 
+/* Titres de fenêtres en anglais quand la langue du site est « en » */
+:root[data-style="terminal"]:lang(en) .project::before { content: '●  ●  ●   ~/projects/' attr(id); }
+:root[data-style="terminal"]:lang(en) .mini::before { content: '●  ●  ●   ~/tools'; }
+:root[data-style="terminal"]:lang(en) #parcours::before { content: '●  ●  ●   ~/experience.log'; }
+:root[data-style="terminal"]:lang(en) #competences::before { content: '●  ●  ●   ~/skills.txt'; }
+:root[data-style="retro"]:lang(en) .hero-card::before { content: 'Profile.exe'; }
+:root[data-style="retro"]:lang(en) .project::before { content: 'Project — ' attr(id) '.exe'; }
+:root[data-style="retro"]:lang(en) .mini::before { content: 'Tool.exe'; }
+:root[data-style="retro"]:lang(en) #parcours::before { content: 'Experience.txt — Notepad'; }
+:root[data-style="retro"]:lang(en) #competences::before { content: 'Skills.txt — Notepad'; }
+
 @media (max-width: 640px) {
   :root[data-style] .hero-photo { flex: 0 0 auto; width: 112px; }
   :root[data-style="retro"] .hero-photo { margin: 16px 16px 0; }

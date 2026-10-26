@@ -325,7 +325,7 @@ test('page publique en anglais quand la langue du site est « en »', async () =
   });
   assert.equal(put.status, 200);
   const html = await (await fetch(BASE)).text();
-  assert.match(html, /<html lang="en">/);
+  assert.match(html, /<html lang="en"[ >]/);
   assert.match(html, /View code ↗/);
   assert.match(html, /data-copied="Link copied ✓"/);
   assert.doesNotMatch(html, /Voir le code|Copier le lien|Partager la page/);

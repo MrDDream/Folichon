@@ -37,15 +37,16 @@ Folichon is a single page that tells your story (who you are, what you build, wh
 
 ## ✨ What it does
 
-|                                   |                                                                                                                                                          |
-| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 🧑‍💻 **A page that looks like you** | Introduction with photo, key figures, big project cards with their own colours and screenshots, small projects, experience timeline, skills and contact. |
-| ✏️ **Built-in editor**            | Every text, link, colour and image is editable from the browser, with lists you reorder, undo on delete and a guard against overwriting a newer version. |
-| 🔐 **Secured**                    | Admin at a secret address, password **and** two-factor authentication, limited attempts, revocable sessions, strict security headers.                    |
-| 🌗 **Light and dark**             | Follows the system, with a switch on the page and in the editor.                                                                                         |
-| 📱 **Mobile first**               | Sticky menu, compact layout, the phone's own share sheet.                                                                                                |
-| 🌍 **French and English**         | The page and the editor speak both.                                                                                                                      |
-| 🪶 **Light**                      | One container, no database, no external resource: fonts are served by the site, images are WebP.                                                         |
+|                                   |                                                                                                                                                                   |
+| --------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🧑‍💻 **A page that looks like you** | Introduction with photo, key figures, big project cards with their own colours and screenshots, small projects, experience timeline, skills and contact.          |
+| ✏️ **Built-in editor**            | Every text, link, colour and image is editable from the browser, with lists you reorder, undo on delete and a guard against overwriting a newer version.          |
+| 🔐 **Secured**                    | Admin at a secret address, password **and** two-factor authentication, limited attempts, revocable sessions, strict security headers.                             |
+| 🌗 **Light and dark**             | Follows the system, with a switch on the page and in the editor.                                                                                                  |
+| 🎨 **7 themes, your fonts**       | Folichon, Magazine, Terminal, Retro, Neon, Pop or Plain CV: each changes the layout, not just the colours. Pick a font for headings and body, or upload your own. |
+| 📱 **Mobile first**               | Sticky menu, compact layout, the phone's own share sheet.                                                                                                         |
+| 🌍 **French and English**         | The page and the editor speak both.                                                                                                                               |
+| 🪶 **Light**                      | One container, no database, no external resource: fonts are served by the site, images are WebP.                                                                  |
 
 ## 📸 Screenshots
 
@@ -126,6 +127,7 @@ To build the image yourself: clone the repository, `cp .env.example .env`, then 
 - **Lists**: add, remove and reorder items with the ↑ ↓ arrows.
 - **Images**: "Envoyer une image" button, or an `https://…` link.
 - **Colours**: each project has its own colour set.
+- **Theme and fonts** (Top of page › Site settings): 7 themes that change the layout and style of the public page; light/dark mode and the accent colour stay yours. One font for headings, one for body text: a bundled one (Bricolage Grotesque, Inter, JetBrains Mono), a family already installed on devices (serif, rounded, handwritten…), or your own file (WOFF2, WOFF, TTF or OTF), served by your server. Check that its licence allows use on a website.
 - **Headline**: words between asterisks take the accent colour, for example `I build *Android apps*`.
 - **Save** (or Ctrl/Cmd + S): the public page updates at once; the previous version is kept in `data/content.backup.json`. If the content changed elsewhere (another tab), saving is refused instead of overwriting it.
 - **Export / Import**: back up or restore all content as one JSON file.
