@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <a href="https://mrddream.github.io/Folichon/"><img src="https://img.shields.io/badge/site-en%20ligne-FF7A59" alt="Site"></a>
   <a href="https://github.com/MrDDream/Folichon/releases/latest"><img src="https://img.shields.io/github/v/release/MrDDream/Folichon?color=FF7A59&label=version" alt="Dernière version"></a>
   <a href="https://github.com/MrDDream/Folichon/pkgs/container/folichon"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fmrddream%2Ffolichon-FF7A59?logo=docker&logoColor=white" alt="Image Docker"></a>
   <a href="https://github.com/MrDDream/Folichon/actions/workflows/tests.yml"><img src="https://github.com/MrDDream/Folichon/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
@@ -17,6 +18,7 @@
 </p>
 
 <p align="center">
+  <a href="https://mrddream.github.io/Folichon/"><b>Site</b></a> ·
   <a href="#installation-docker-compose">Installer</a> ·
   <a href="#-ce-que-ça-fait">Fonctions</a> ·
   <a href="#-captures">Captures</a> ·
@@ -59,7 +61,12 @@ Folichon, c'est une seule page qui raconte ton histoire (qui tu es, ce que tu co
 <td align="center"><b>Éditeur</b><br><img src="docs/screens/admin.webp" alt="L'éditeur intégré" width="400"></td>
 <td align="center"><b>Sur mobile</b><br><img src="docs/screens/mobile.webp" alt="La page sur un téléphone" width="400"></td>
 </tr>
+<tr>
+<td align="center" colspan="2"><b>Sept thèmes</b><br><img src="docs/screens/themes.webp" alt="Les sept thèmes : Folichon, Magazine, Terminal, Rétro, Néon, Pop et CV sobre" width="810"></td>
+</tr>
 </table>
+
+Alex Martin est un profil inventé pour les captures. Tous les thèmes, en clair et en sombre, sont à voir sur le [site](https://mrddream.github.io/Folichon/#themes).
 
 ## Installation (Docker Compose)
 
@@ -100,7 +107,7 @@ Folichon, c'est une seule page qui raconte ton histoire (qui tu es, ce que tu co
 
 Le site est sur `http://ton-serveur:3000`, l'administration sur `http://ton-serveur:3000/gestion-7f3k9q2x`. Sans `ADMIN_PATH`, une adresse aléatoire est générée : elle s'affiche dans `docker logs folichon`.
 
-Pour construire l'image toi-même : clone le dépôt, `cp .env.example .env`, puis `docker compose up -d --build`.
+Pour construire l'image toi-même : clone le dépôt, `cp .env.example .env`, puis `docker compose up -d --build`. Dans ce cas, `HOST_PORT` dans `.env` choisit le port côté serveur (`3000` par défaut).
 
 ## Variables d'environnement
 
@@ -140,7 +147,7 @@ Pour construire l'image toi-même : clone le dépôt, `cp .env.example .env`, pu
 - Sessions signées, `HttpOnly`, `SameSite=Strict`, valables 12 h ; changer le mot de passe ou la clé 2FA déconnecte tout le monde, et « Déconnexion » révoque la session côté serveur.
 - Requêtes d'écriture refusées si elles viennent d'un autre site.
 - En-têtes `Content-Security-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `X-Content-Type-Options`, `Strict-Transport-Security` (en HTTPS), `noindex` sur l'admin.
-- Envois limités aux images (PNG, JPG, WebP, GIF, AVIF) et au PDF, 15 Mo maximum, avec vérification du contenu réel. Pas de SVG.
+- Envois limités aux images (PNG, JPG, WebP, GIF, AVIF), au PDF et aux polices (WOFF2, WOFF, TTF, OTF), 15 Mo maximum, avec vérification du contenu réel. Pas de SVG.
 - Aucune ressource externe chargée par la page.
 
 Une faille ? Voir [SECURITY.md](SECURITY.md).

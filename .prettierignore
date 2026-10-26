@@ -5,3 +5,5 @@ public/fonts
 # Les vues EJS et le CSS en une ligne par règle gardent leur mise en forme actuelle.
 views
 public/css
+# Page du site GitHub Pages : CSS en une ligne par règle, comme public/css.
+docs/index.html

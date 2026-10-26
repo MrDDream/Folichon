@@ -10,6 +10,7 @@
 </p>
 
 <p align="center">
+  <a href="https://mrddream.github.io/Folichon/"><img src="https://img.shields.io/badge/website-online-FF7A59" alt="Website"></a>
   <a href="https://github.com/MrDDream/Folichon/releases/latest"><img src="https://img.shields.io/github/v/release/MrDDream/Folichon?color=FF7A59&label=release" alt="Latest release"></a>
   <a href="https://github.com/MrDDream/Folichon/pkgs/container/folichon"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fmrddream%2Ffolichon-FF7A59?logo=docker&logoColor=white" alt="Docker image"></a>
   <a href="https://github.com/MrDDream/Folichon/actions/workflows/tests.yml"><img src="https://github.com/MrDDream/Folichon/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
@@ -17,6 +18,7 @@
 </p>
 
 <p align="center">
+  <a href="https://mrddream.github.io/Folichon/"><b>Website</b></a> ·
   <a href="#install-docker-compose">Install</a> ·
   <a href="#-what-it-does">Features</a> ·
   <a href="#-screenshots">Screenshots</a> ·
@@ -59,7 +61,12 @@ Folichon is a single page that tells your story (who you are, what you build, wh
 <td align="center"><b>Editor</b><br><img src="docs/screens/admin.webp" alt="The built-in editor" width="400"></td>
 <td align="center"><b>On mobile</b><br><img src="docs/screens/mobile.webp" alt="The page on a phone" width="400"></td>
 </tr>
+<tr>
+<td align="center" colspan="2"><b>Seven themes</b><br><img src="docs/screens/themes.webp" alt="The seven themes: Folichon, Magazine, Terminal, Retro, Neon, Pop and Plain CV" width="810"></td>
+</tr>
 </table>
+
+Alex Martin is an invented profile used for the screenshots. Browse every theme, in light and dark, on the [website](https://mrddream.github.io/Folichon/#themes).
 
 ## Install (Docker Compose)
 
@@ -100,7 +107,7 @@ Folichon is a single page that tells your story (who you are, what you build, wh
 
 The site is at `http://your-server:3000`, the admin at `http://your-server:3000/admin-7f3k9q2x`. Without `ADMIN_PATH`, a random address is generated and printed in `docker logs folichon`.
 
-To build the image yourself: clone the repository, `cp .env.example .env`, then `docker compose up -d --build`.
+To build the image yourself: clone the repository, `cp .env.example .env`, then `docker compose up -d --build`. In that case, `HOST_PORT` in `.env` sets the port on your server (`3000` by default).
 
 ## Environment variables
 
@@ -140,7 +147,7 @@ To build the image yourself: clone the repository, `cp .env.example .env`, then 
 - Signed, `HttpOnly`, `SameSite=Strict` sessions valid for 12 h; changing the password or the 2FA key signs everyone out, and "Déconnexion" revokes the session on the server.
 - Write requests coming from another site are refused.
 - `Content-Security-Policy`, `Permissions-Policy`, `Cross-Origin-Opener-Policy`, `X-Content-Type-Options`, `Strict-Transport-Security` (over HTTPS) headers, `noindex` on the admin.
-- Uploads limited to images (PNG, JPG, WebP, GIF, AVIF) and PDF, 15 MB at most, with a check of the real content. No SVG.
+- Uploads limited to images (PNG, JPG, WebP, GIF, AVIF), PDF and fonts (WOFF2, WOFF, TTF, OTF), 15 MB at most, with a check of the real content. No SVG.
 - The page loads no external resource.
 
 Found a vulnerability? See [SECURITY.md](SECURITY.md).
