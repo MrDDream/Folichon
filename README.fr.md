@@ -1,20 +1,64 @@
-<p align="center"><img src="docs/banner.png" alt="Folichon — une page CV & portfolio auto-hébergée, avec une administration cachée" width="760"></p>
-
 <p align="center">
-<a href="#installation-docker-compose">Installer</a> ·
-<a href="#utiliser-ladministration">Administration</a> ·
-<a href="#sécurité">Sécurité</a> ·
-<a href="README.md">English</a>
+  <img src="docs/logo.svg" alt="Logo Folichon" width="104" height="104">
 </p>
 
-**Folichon** est une page CV / portfolio auto-hébergée, avec une **administration cachée** pour modifier tout le contenu sans toucher au code : présentation, projets, parcours, compétences, contact.
+<h1 align="center">Folichon</h1>
 
-<p align="center"><img src="docs/screenshot.webp" alt="Page d'exemple de Folichon" width="760"></p>
+<p align="center">
+  <b>Ton CV et tes projets, sur ton propre serveur.</b><br>
+  Une page portfolio joyeuse que tu modifies depuis ton navigateur : un seul conteneur Docker, sans base de données.
+</p>
 
-- Page publique rendue côté serveur, adaptée au mobile, avec **mode sombre** et **menu de partage**.
-- Administration à une **adresse secrète**, protégée par mot de passe **et double authentification** (Google Authenticator, Aegis, 2FAS…).
-- Tout le contenu vit dans un fichier JSON ; les images et le CV envoyés depuis l'admin sont stockés à côté.
-- **Un seul conteneur Docker**, sans base de données ni service externe (polices comprises).
+<p align="center">
+  <a href="https://github.com/MrDDream/Folichon/releases/latest"><img src="https://img.shields.io/github/v/release/MrDDream/Folichon?color=FF7A59&label=version" alt="Dernière version"></a>
+  <a href="https://github.com/MrDDream/Folichon/pkgs/container/folichon"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fmrddream%2Ffolichon-FF7A59?logo=docker&logoColor=white" alt="Image Docker"></a>
+  <a href="https://github.com/MrDDream/Folichon/actions/workflows/tests.yml"><img src="https://github.com/MrDDream/Folichon/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/licence-MIT-FF7A59" alt="Licence MIT"></a>
+</p>
+
+<p align="center">
+  <a href="#installation-docker-compose">Installer</a> ·
+  <a href="#-ce-que-ça-fait">Fonctions</a> ·
+  <a href="#-captures">Captures</a> ·
+  <a href="README.md">English</a>
+</p>
+
+<p align="center">
+  <img src="docs/hero.webp" alt="La page publique, l'éditeur et la vue mobile" width="820">
+</p>
+
+---
+
+## 😄 Pourquoi Folichon ?
+
+Un CV en PDF, c'est bien, mais ça ne montre pas ce que tu construis. Les créateurs de sites le montrent joliment, sur leurs serveurs, avec leur logo et leurs traceurs.
+
+Folichon, c'est une seule page qui raconte ton histoire (qui tu es, ce que tu construis, ton parcours, tes compétences), hébergée sur **ton** serveur. Tu la modifies depuis un éditeur intégré, dans ton navigateur : pas de code, pas de recompilation, pas de base de données.
+
+## ✨ Ce que ça fait
+
+|                                  |                                                                                                                                                                                                             |
+| -------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🧑‍💻 **Une page qui te ressemble** | Présentation avec photo, chiffres clés, grands projets avec leurs couleurs et leurs captures, mini projets, parcours, compétences et contact.                                                               |
+| ✏️ **Éditeur intégré**           | Tous les textes, liens, couleurs et images se modifient dans le navigateur, avec des listes réordonnables, l'annulation d'une suppression et une protection contre l'écrasement d'une version plus récente. |
+| 🔐 **Sécurisé**                  | Administration à une adresse secrète, mot de passe **et** double authentification, essais limités, sessions révocables, en-têtes de sécurité stricts.                                                       |
+| 🌗 **Clair et sombre**           | Suit le système, avec un bouton sur la page et dans l'éditeur.                                                                                                                                              |
+| 📱 **Pensé mobile**              | Menu collant, mise en page compacte, menu de partage du téléphone.                                                                                                                                          |
+| 🌍 **Français et anglais**       | La page et l'éditeur parlent les deux.                                                                                                                                                                      |
+| 🪶 **Léger**                     | Un seul conteneur, pas de base de données, aucune ressource externe : polices servies par le site, images en WebP.                                                                                          |
+
+## 📸 Captures
+
+<table>
+<tr>
+<td align="center"><b>Page publique</b><br><img src="docs/screens/page-light.webp" alt="Page publique en mode clair" width="400"></td>
+<td align="center"><b>Mode sombre</b><br><img src="docs/screens/page-dark.webp" alt="Page publique en mode sombre" width="400"></td>
+</tr>
+<tr>
+<td align="center"><b>Éditeur</b><br><img src="docs/screens/admin.webp" alt="L'éditeur intégré" width="400"></td>
+<td align="center"><b>Sur mobile</b><br><img src="docs/screens/mobile.webp" alt="La page sur un téléphone" width="400"></td>
+</tr>
+</table>
 
 ## Installation (Docker Compose)
 

@@ -38,7 +38,7 @@ jobs:
             type=raw,value=latest,enable={{is_default_branch}}
           labels: |
             org.opencontainers.image.title=Folichon
-            org.opencontainers.image.description=Self-hosted CV and portfolio page with a hidden admin
+            org.opencontainers.image.description=Your CV and projects, on your own server
             org.opencontainers.image.licenses=MIT
 
       - uses: docker/build-push-action@v6

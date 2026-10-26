@@ -12,6 +12,6 @@ Only the latest release (and the `latest` Docker image) receives security fixes.
 
 ## Scope
 
-In scope: the public page, the hidden admin (sign-in, two-factor authentication, sessions, saving, uploads) and the Docker image.
+In scope: the public page, the admin (sign-in, two-factor authentication, sessions, saving, uploads) and the Docker image.
 
 Out of scope: weak passwords chosen by the person running the site, a server exposed without HTTPS, and a reverse proxy configured to trust every `X-Forwarded-For` header.

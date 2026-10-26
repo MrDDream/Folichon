@@ -1,22 +1,64 @@
-<p align="center"><img src="docs/banner.png" alt="Folichon — a self-hosted CV & portfolio page, with a hidden admin" width="760"></p>
-
 <p align="center">
-<a href="#install-docker-compose">Install</a> ·
-<a href="#using-the-admin">Admin</a> ·
-<a href="#security">Security</a> ·
-<a href="README.fr.md">Français</a>
+  <img src="docs/logo.svg" alt="Folichon logo" width="104" height="104">
 </p>
 
-**Folichon** is a self-hosted CV / portfolio page with a **hidden admin** to edit everything without touching the code: introduction, projects, experience, skills, contact.
+<h1 align="center">Folichon</h1>
 
-<p align="center"><img src="docs/screenshot.webp" alt="Folichon sample page" width="760"></p>
+<p align="center">
+  <b>Your CV and projects, on your own server.</b><br>
+  A cheerful portfolio page you edit from your browser: one Docker container, no database.
+</p>
 
-- Server-rendered public page, mobile friendly, with **dark mode** and a **share menu**.
-- Admin at a **secret address**, protected by a password **and two-factor authentication** (Google Authenticator, Aegis, 2FAS…).
-- All content lives in one JSON file; images and the CV uploaded from the admin are stored next to it.
-- **A single Docker container**, no database, no external service (fonts included).
+<p align="center">
+  <a href="https://github.com/MrDDream/Folichon/releases/latest"><img src="https://img.shields.io/github/v/release/MrDDream/Folichon?color=FF7A59&label=release" alt="Latest release"></a>
+  <a href="https://github.com/MrDDream/Folichon/pkgs/container/folichon"><img src="https://img.shields.io/badge/docker-ghcr.io%2Fmrddream%2Ffolichon-FF7A59?logo=docker&logoColor=white" alt="Docker image"></a>
+  <a href="https://github.com/MrDDream/Folichon/actions/workflows/tests.yml"><img src="https://github.com/MrDDream/Folichon/actions/workflows/tests.yml/badge.svg" alt="Tests"></a>
+  <a href="LICENSE"><img src="https://img.shields.io/badge/license-MIT-FF7A59" alt="MIT license"></a>
+</p>
 
-The sample content and the admin are in French; every text on the page can be changed from the admin.
+<p align="center">
+  <a href="#install-docker-compose">Install</a> ·
+  <a href="#-what-it-does">Features</a> ·
+  <a href="#-screenshots">Screenshots</a> ·
+  <a href="README.fr.md">Version française</a>
+</p>
+
+<p align="center">
+  <img src="docs/hero.webp" alt="The public page, the editor and the mobile view" width="820">
+</p>
+
+---
+
+## 😄 Why Folichon?
+
+A CV in a PDF is fine, but it doesn't show what you build. Website builders show it nicely, on someone else's servers, with their branding and their trackers.
+
+Folichon is a single page that tells your story (who you are, what you build, where you've worked, what you know), hosted on **your** server. You change it from a built-in editor in your browser: no code, no rebuild, no database.
+
+## ✨ What it does
+
+|                                   |                                                                                                                                                          |
+| --------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 🧑‍💻 **A page that looks like you** | Introduction with photo, key figures, big project cards with their own colours and screenshots, small projects, experience timeline, skills and contact. |
+| ✏️ **Built-in editor**            | Every text, link, colour and image is editable from the browser, with lists you reorder, undo on delete and a guard against overwriting a newer version. |
+| 🔐 **Secured**                    | Admin at a secret address, password **and** two-factor authentication, limited attempts, revocable sessions, strict security headers.                    |
+| 🌗 **Light and dark**             | Follows the system, with a switch on the page and in the editor.                                                                                         |
+| 📱 **Mobile first**               | Sticky menu, compact layout, the phone's own share sheet.                                                                                                |
+| 🌍 **French and English**         | The page and the editor speak both.                                                                                                                      |
+| 🪶 **Light**                      | One container, no database, no external resource: fonts are served by the site, images are WebP.                                                         |
+
+## 📸 Screenshots
+
+<table>
+<tr>
+<td align="center"><b>Public page</b><br><img src="docs/screens/page-light.webp" alt="Public page in light mode" width="400"></td>
+<td align="center"><b>Dark mode</b><br><img src="docs/screens/page-dark.webp" alt="Public page in dark mode" width="400"></td>
+</tr>
+<tr>
+<td align="center"><b>Editor</b><br><img src="docs/screens/admin.webp" alt="The built-in editor" width="400"></td>
+<td align="center"><b>On mobile</b><br><img src="docs/screens/mobile.webp" alt="The page on a phone" width="400"></td>
+</tr>
+</table>
 
 ## Install (Docker Compose)
 

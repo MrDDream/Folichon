@@ -122,7 +122,8 @@ const themeToggle = document.querySelector('.theme-toggle');
 if (themeToggle) {
   const root = document.documentElement;
   const label = () => {
-    const text = root.dataset.theme === 'dark' ? 'Passer en mode clair' : 'Passer en mode sombre';
+    // Libellés fournis par la page, dans la langue du site.
+    const text = root.dataset.theme === 'dark' ? themeToggle.dataset.toLight : themeToggle.dataset.toDark;
     themeToggle.setAttribute('aria-label', text);
     themeToggle.title = text;
   };
@@ -166,13 +167,15 @@ if (shareBtn && sheet) {
       return ok;
     }
   };
-  const copyLabel = sheet.querySelector('.copy-label');
-  sheet.querySelector('[data-share="copy"]').addEventListener('click', async () => {
-    if (!(await copy(url))) return prompt('Copie ce lien :', url);
-    copyLabel.textContent = 'Lien copié ✓';
+  const copyButton = sheet.querySelector('[data-share="copy"]');
+  const copyLabel = copyButton.querySelector('.copy-label');
+  const copyText = copyLabel.textContent;
+  copyButton.addEventListener('click', async () => {
+    if (!(await copy(url))) return prompt(copyButton.dataset.prompt, url);
+    copyLabel.textContent = copyButton.dataset.copied;
     setTimeout(() => {
       sheet.close();
-      copyLabel.textContent = 'Copier le lien';
+      copyLabel.textContent = copyText;
     }, 900);
   });
   sheet.querySelector('.share-close').addEventListener('click', () => sheet.close());

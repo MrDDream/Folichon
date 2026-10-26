@@ -277,6 +277,22 @@ test("l'admin connaît sa version (vérification GitHub désactivée pendant les
   assert.equal((await fetch(`${BASE + ADMIN}/api/version`)).status, 401);
 });
 
+test('page publique en anglais quand la langue du site est « en »', async () => {
+  const content = await (await fetch(`${BASE + ADMIN}/api/content`, { headers: { cookie } })).json();
+  content.site.lang = 'en';
+  const put = await fetch(`${BASE + ADMIN}/api/content`, {
+    method: 'PUT',
+    headers: { cookie, 'Content-Type': 'application/json', 'X-Requested-With': 'folichon-admin' },
+    body: JSON.stringify(content)
+  });
+  assert.equal(put.status, 200);
+  const html = await (await fetch(BASE)).text();
+  assert.match(html, /<html lang="en">/);
+  assert.match(html, /View code ↗/);
+  assert.match(html, /data-copied="Link copied ✓"/);
+  assert.doesNotMatch(html, /Voir le code|Copier le lien|Partager la page/);
+});
+
 test('la déconnexion révoque la session côté serveur', async () => {
   const before = await fetch(`${BASE + ADMIN}/api/content`, { headers: { cookie } });
   assert.equal(before.status, 200);

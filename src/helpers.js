@@ -65,6 +65,83 @@ export function shareLinks(url, title, description) {
   };
 }
 
+// Textes fixes de la page publique, selon la langue du site (réglée dans l'admin).
+// Les variables s'écrivent {name} et se remplacent avec fill().
+const SITE_TEXT = {
+  fr: {
+    home: 'Accueil',
+    projects: 'Projets',
+    timeline: 'Parcours',
+    skills: 'Compétences',
+    contact: 'Contact',
+    seeProjects: 'Voir mes projets',
+    downloadCv: 'Télécharger mon CV',
+    findMe: 'Me retrouver',
+    languages: 'Langues',
+    emailButton: 'E-mail ↗',
+    viewCode: 'Voir le code ↗',
+    projectSite: 'Site du projet ↗',
+    projectN: 'Projet {n}',
+    photoOf: 'Photo de {name}',
+    screenshot: '{name} : capture d’écran',
+    screenshots: '{name} : captures d’écran',
+    screen: '{name} : écran {n}',
+    sectionsMenu: 'Menu des sections',
+    pageOutline: 'Plan de la page',
+    intro: 'Présentation',
+    socials: 'Réseaux',
+    share: 'Partager',
+    sharePage: 'Partager la page',
+    close: 'Fermer',
+    copyLink: 'Copier le lien',
+    linkCopied: 'Lien copié ✓',
+    copyPrompt: 'Copie ce lien :',
+    changeTheme: 'Changer de thème',
+    toDark: 'Passer en mode sombre',
+    toLight: 'Passer en mode clair'
+  },
+  en: {
+    home: 'Home',
+    projects: 'Projects',
+    timeline: 'Experience',
+    skills: 'Skills',
+    contact: 'Contact',
+    seeProjects: 'See my projects',
+    downloadCv: 'Download my CV',
+    findMe: 'Find me on',
+    languages: 'Languages',
+    emailButton: 'E-mail ↗',
+    viewCode: 'View code ↗',
+    projectSite: 'Project site ↗',
+    projectN: 'Project {n}',
+    photoOf: 'Photo of {name}',
+    screenshot: '{name}: screenshot',
+    screenshots: '{name}: screenshots',
+    screen: '{name}: screen {n}',
+    sectionsMenu: 'Sections',
+    pageOutline: 'Page outline',
+    intro: 'Introduction',
+    socials: 'Social links',
+    share: 'Share',
+    sharePage: 'Share this page',
+    close: 'Close',
+    copyLink: 'Copy link',
+    linkCopied: 'Link copied ✓',
+    copyPrompt: 'Copy this link:',
+    changeTheme: 'Change theme',
+    toDark: 'Switch to dark mode',
+    toLight: 'Switch to light mode'
+  }
+};
+
+export function siteText(lang) {
+  return text(lang).toLowerCase().startsWith('en') ? SITE_TEXT.en : SITE_TEXT.fr;
+}
+
+export function fill(template, vars) {
+  return text(template).replace(/\{(\w+)\}/g, (all, name) => (name in vars ? text(vars[name]) : all));
+}
+
 // « Mon Projet ! » → « mon-projet », pour les ancres de la page.
 export function slug(value) {
   return text(value)
