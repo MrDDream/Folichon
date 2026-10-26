@@ -189,6 +189,22 @@ function fileMatchesType(file, mimetype) {
   }
 }
 
+// Chaque champ de l'admin annonce ce qu'il attend (?kind=…) : une photo ne peut pas recevoir
+// une police, ni un champ de police une image.
+const IMAGE_TYPES = ['image/png', 'image/jpeg', 'image/webp', 'image/gif', 'image/avif'];
+const UPLOAD_KINDS = {
+  image: { types: IMAGE_TYPES, error: 'Formats acceptés : PNG, JPG, WebP, GIF ou AVIF.' },
+  document: {
+    types: [...IMAGE_TYPES, 'application/pdf'],
+    error: 'Formats acceptés : PDF, PNG, JPG, WebP, GIF ou AVIF.'
+  },
+  font: {
+    types: ['font/woff2', 'font/woff', 'font/ttf', 'font/otf'],
+    error: 'Formats acceptés : WOFF2, WOFF, TTF ou OTF.'
+  }
+};
+const uploadKind = (req) => UPLOAD_KINDS[Object.hasOwn(UPLOAD_KINDS, req.query.kind) ? req.query.kind : 'image'];
+
 const upload = multer({
   storage: multer.diskStorage({
     destination: UPLOAD_DIR,
@@ -198,7 +214,7 @@ const upload = multer({
   limits: { fileSize: 15 * 1024 * 1024, files: 1 },
   fileFilter: (req, file, cb) => {
     normalizeType(file);
-    cb(null, Object.hasOwn(UPLOAD_TYPES, file.mimetype));
+    cb(null, uploadKind(req).types.includes(file.mimetype));
   }
 });
 
@@ -378,10 +394,7 @@ admin.post('/api/upload', requireLogin, sameOrigin, requireAjax, (req, res) => {
         .status(400)
         .json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'Fichier trop lourd (15 Mo max).' : err.message });
     }
-    if (!req.file)
-      return res
-        .status(400)
-        .json({ error: 'Formats acceptés : PNG, JPG, WebP, GIF, AVIF, PDF ou police (WOFF2, WOFF, TTF, OTF).' });
+    if (!req.file) return res.status(400).json({ error: uploadKind(req).error });
     if (!fileMatchesType(req.file.path, req.file.mimetype)) {
       fs.rmSync(req.file.path, { force: true });
       return res

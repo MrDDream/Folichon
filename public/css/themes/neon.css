@@ -1,0 +1,53 @@
+/* Thème « Néon » de Folichon, chargé seulement quand il est choisi dans l'admin
+   (Apparence). Il s'ajoute à site.css : data-style est posé sur <html> par le serveur. */
+
+/* ---------- Néon : halos lumineux et cartes en verre dépoli ---------- */
+:root[data-style="neon"] {
+  --c-page: light-dark(#EEF0FA, #07060D);
+  --c-surface: light-dark(rgba(255, 255, 255, .55), rgba(255, 255, 255, .05));
+  --c-ink: light-dark(#14112A, #F4F2FF);
+  --c-body: light-dark(#3C3860, #C4C0E0);
+  --c-muted: light-dark(#55507A, #A49FC6);
+  --c-line: light-dark(rgba(20, 17, 42, .12), rgba(255, 255, 255, .12));
+  --c-dash: light-dark(rgba(20, 17, 42, .2), rgba(255, 255, 255, .2));
+  --c-hover: light-dark(rgba(255, 255, 255, .7), rgba(255, 255, 255, .1));
+  --c-ring: light-dark(#A39FC4, #5B5680);
+  --c-dots: light-dark(#B3AFD0, #4A466C);
+  --c-sublabel: light-dark(#6B668F, #9A95BC);
+  --c-card-dark: light-dark(rgba(20, 17, 42, .82), rgba(255, 255, 255, .06));
+  --glass: blur(22px) saturate(1.5);
+  --r-xl: 28px; --r-lg: 24px; --r-md: 22px; --r-sm: 18px;
+}
+:root[data-style="neon"] body::before { content: ''; position: fixed; inset: -20vmax; z-index: -1; pointer-events: none; background: radial-gradient(closest-side, color-mix(in srgb, var(--accent) 55%, transparent), transparent) 10% 15% / 55vmax 55vmax no-repeat, radial-gradient(closest-side, light-dark(rgba(255, 79, 216, .35), rgba(255, 79, 216, .4)), transparent) 85% 30% / 50vmax 50vmax no-repeat, radial-gradient(closest-side, light-dark(rgba(34, 211, 238, .35), rgba(34, 211, 238, .3)), transparent) 40% 85% / 60vmax 60vmax no-repeat; filter: blur(40px); animation: neon-drift 24s ease-in-out infinite alternate; }
+@keyframes neon-drift { to { transform: translate(4vmax, -3vmax) rotate(8deg); } }
+:root[data-style="neon"] :is(.hero-card, .card, .contact, .mini, .project, .stat) { -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); border: 1px solid var(--c-line); box-shadow: 0 30px 60px -30px rgba(10, 5, 40, .35); }
+:root[data-style="neon"] .hero h1 { background: linear-gradient(100deg, var(--c-ink) 20%, var(--accent-text) 60%, #FF4FD8); -webkit-background-clip: text; background-clip: text; color: transparent; padding-bottom: .08em; }
+:root[data-style="neon"] .btn-primary { box-shadow: 0 0 0 1px color-mix(in srgb, var(--accent) 60%, #FFFFFF), 0 10px 40px -6px var(--accent); }
+:root[data-style="neon"] :is(.btn-soft, .btn-white) { background: var(--c-hover); border: 1px solid var(--c-line); }
+:root[data-style="neon"] .stat { background: color-mix(in srgb, var(--bg-stat, var(--accent)) 20%, transparent) !important; color: var(--c-ink) !important; }
+:root[data-style="neon"] .stat-value { color: var(--accent-text); text-shadow: 0 0 24px color-mix(in srgb, var(--accent) 60%, transparent); }
+:root[data-style="neon"] .project, :root[data-style="neon"] .mini { background: color-mix(in srgb, var(--bg) 22%, transparent); color: var(--c-ink); }
+:root[data-style="neon"] .project-text, :root[data-style="neon"] .mini > * { --ink: var(--c-ink); --text: var(--c-body); --slogan: var(--accent-text); --surface: var(--c-hover); }
+:root[data-style="neon"] .project h3 { text-shadow: 0 0 30px color-mix(in srgb, var(--accent) 50%, transparent); }
+:root[data-style="neon"] .mini-icon { background: var(--c-hover); border: 1px solid var(--c-line); }
+:root[data-style="neon"] .card-dark { color: #FFFFFF; }
+:root[data-style="neon"] .skill { box-shadow: 0 0 18px -4px currentColor; }
+:root[data-style="neon"] .contact { background: radial-gradient(120% 140% at 0% 0%, color-mix(in srgb, var(--accent) 85%, #FF4FD8), var(--accent) 50%, color-mix(in srgb, var(--accent) 70%, #22D3EE)); box-shadow: 0 30px 90px -30px var(--accent); }
+:root[data-style="neon"] .hero-photo { box-shadow: 0 0 80px -10px var(--accent); }
+:root[data-style="neon"] .fab { background: var(--c-hover); -webkit-backdrop-filter: var(--glass); backdrop-filter: var(--glass); }
+:root[data-style="neon"] .topnav { background: transparent; }
+
+@media (prefers-reduced-motion: reduce) {
+  :root[data-style="neon"] body::before { animation: none; }
+}
+
+/* Petits écrans : pas de flou d'arrière-plan ni de halos animés (coûteux sur un téléphone
+   modeste) ; des cartes un peu plus opaques gardent le texte lisible. */
+@media (max-width: 640px) {
+  :root[data-style="neon"] {
+    --glass: none;
+    --c-surface: light-dark(rgba(255, 255, 255, .84), rgba(24, 22, 40, .88));
+    --c-hover: light-dark(rgba(255, 255, 255, .9), rgba(40, 37, 64, .92));
+  }
+  :root[data-style="neon"] body::before { animation: none; }
+}

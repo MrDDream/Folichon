@@ -50,6 +50,9 @@ test('la page publique affiche le contenu par défaut', async () => {
   assert.match(html, /Appli mobile/);
   assert.match(html, /Service web/);
   assert.match(html, /<html [^>]*data-style="folichon"/);
+  // Thème par défaut : aucune feuille de thème en plus.
+  assert.doesNotMatch(html, /\/assets\/css\/themes\//);
+  assert.match(html, /<article id="projet-appli-mobile" data-slug="appli-mobile"/);
   assert.ok(res.headers.get('content-security-policy'));
 
   const icon = await fetch(`${BASE}/favicon.svg`);
@@ -163,6 +166,11 @@ test('connexion, modification et page publique mise à jour', async () => {
   const html = await (await fetch(BASE)).text();
   assert.match(html, /Ada Test/);
   assert.match(html, /<html [^>]*data-style="pop"/);
+  // Seule la feuille du thème choisi est chargée.
+  const sheet = html.match(/href="(\/assets\/css\/themes\/pop\.css\?v=[a-z0-9]+)"/);
+  assert.ok(sheet, 'feuille du thème Pop');
+  assert.equal((await fetch(BASE + sheet[1])).status, 200);
+  assert.doesNotMatch(html, /themes\/(magazine|terminal|retro|neon|cv)\.css/);
   assert.match(html, /<span class="hl">mot<\/span>/);
   assert.doesNotMatch(html, /<script>alert/);
   assert.doesNotMatch(html, /javascript:alert/);
@@ -198,10 +206,10 @@ test("l'envoi d'image fonctionne et refuse le SVG", async () => {
 });
 
 test("police envoyée : acceptée d'après son contenu, puis utilisée par la page", async () => {
-  const send = async (bytes, name, type = 'application/octet-stream') => {
+  const send = async (bytes, name, type = 'application/octet-stream', kind = 'font') => {
     const fd = new FormData();
     fd.append('file', new Blob([bytes], { type }), name);
-    return fetch(`${BASE + ADMIN}/api/upload`, {
+    return fetch(`${BASE + ADMIN}/api/upload?kind=${kind}`, {
       method: 'POST',
       headers: { cookie, 'X-Requested-With': 'folichon-admin' },
       body: fd
@@ -216,6 +224,17 @@ test("police envoyée : acceptée d'après son contenu, puis utilisée par la pa
 
   // Un faux fichier nommé .ttf est refusé.
   assert.equal((await send(Buffer.from('<html>pas une police</html>'), 'x.ttf')).status, 400);
+  // Chaque champ n'accepte que son type : pas de police dans un champ d'image, ni l'inverse.
+  const intoImage = await send(woff2, 'MaPolice.woff2', 'font/woff2', 'image');
+  assert.equal(intoImage.status, 400);
+  assert.match((await intoImage.json()).error, /PNG, JPG/);
+  const png = Buffer.from(
+    '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4f30000000049454e44ae426082',
+    'hex'
+  );
+  assert.equal((await send(png, 'pixel.png', 'image/png', 'font')).status, 400);
+  assert.equal((await send(Buffer.from('%PDF-1.4\n%âãÏÓ\n'), 'cv.pdf', 'application/pdf', 'image')).status, 400);
+  assert.equal((await send(Buffer.from('%PDF-1.4\n%âãÏÓ\n'), 'cv.pdf', 'application/pdf', 'document')).status, 200);
 
   const content = await (await fetch(`${BASE + ADMIN}/api/content`, { headers: { cookie } })).json();
   content.site.fontDisplay = 'custom';

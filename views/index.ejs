@@ -32,6 +32,7 @@
 <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/site.css?v=<%= assetVersion %>">
+<% const pageStyle = h.siteTheme(c.site?.theme); if (pageStyle !== h.siteThemes[0]) { %><link rel="stylesheet" href="/assets/css/themes/<%= pageStyle %>.css?v=<%= assetVersion %>"><% } %>
 <script src="/assets/js/theme.js?v=<%= assetVersion %>"></script>
 <style>:root{--accent:<%= accent %>}
 <%- h.fontCss(c.site) %></style>
@@ -145,7 +146,7 @@
         `--on-accent:${h.color(t.onAccent, '#FFFFFF')}`, `--surface:${h.color(t.surface, '#FFFFFF')}`
       ].join(';');
     %>
-    <article id="<%= projectIds[pi] %>" class="project<%= left ? ' media-left' : '' %>" style="<%= style %>">
+    <article id="<%= projectIds[pi] %>" data-slug="<%= projectIds[pi].replace(/^projet-/, '') %>" class="project<%= left ? ' media-left' : '' %>" style="<%= style %>">
       <div class="project-text">
         <% if (pr.tag) { %><span class="tag mono"><%= pr.tag %></span><% } %>
         <h3 class="display"><%= pr.name %></h3>

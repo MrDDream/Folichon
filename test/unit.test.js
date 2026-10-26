@@ -7,7 +7,7 @@ import * as h from '../src/helpers.js';
 import { createAuth } from '../src/auth.js';
 import { createImageSizer } from '../src/images.js';
 import { createStore } from '../src/store.js';
-import { isNewer } from '../src/version.js';
+import { isNewer, releaseUrl } from '../src/version.js';
 
 test('siteTheme : seuls les thèmes connus passent, sinon le thème par défaut', () => {
   for (const name of h.siteThemes) assert.equal(h.siteTheme(name), name);
@@ -156,4 +156,17 @@ test('versions : comparaison nombre par nombre', () => {
   assert.equal(isNewer('v2.0.0', '1.99.99'), true);
   assert.equal(isNewer('1.0.0', '1.0.0'), false);
   assert.equal(isNewer('1.0.0', '1.0.1'), false);
+});
+
+test('versions : le lien de la note de version reste sur le dépôt Folichon', () => {
+  const ok = 'https://github.com/MrDDream/Folichon/releases/tag/v0.2.0';
+  assert.equal(releaseUrl(ok), ok);
+  for (const bad of [
+    'javascript:alert(1)',
+    'https://evil.example/MrDDream/Folichon/',
+    'https://github.com/autre/depot/',
+    null
+  ]) {
+    assert.equal(releaseUrl(bad), 'https://github.com/MrDDream/Folichon/releases');
+  }
 });

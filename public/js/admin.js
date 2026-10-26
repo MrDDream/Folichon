@@ -74,31 +74,7 @@ const SECTIONS = [
         'site',
         group('Réglages du site', [
           ['title', text('Titre de l’onglet')],
-          ['description', area('Description (moteurs de recherche, partages)')],
-          ['accent', color('Couleur d’accent principale')],
-          [
-            'theme',
-            themes('Thème de la page', {
-              help: 'Change la mise en page et le style de la page publique. Le mode clair / sombre et la couleur d’accent sont conservés.'
-            })
-          ],
-          [
-            '',
-            group(
-              'Polices',
-              [
-                ['fontDisplay', font('Police des titres', { sample: 'Prénom Nom', weight: 800 })],
-                [
-                  'fontBody',
-                  font('Police du texte', { sample: 'Portez ce vieux whisky au juge blond qui fume', weight: 400 })
-                ]
-              ],
-              {
-                inline: true,
-                help: 'Les polices « déjà installées » changent un peu d’un appareil à l’autre. Pour un rendu identique partout, envoie ta propre police.'
-              }
-            )
-          ]
+          ['description', area('Description (moteurs de recherche, partages)')]
         ])
       ],
       [
@@ -422,6 +398,71 @@ const SECTIONS = [
         )
       ]
     ]
+  },
+  {
+    id: 'apparence',
+    title: 'Apparence',
+    group: 'design',
+    fields: [
+      [
+        'site',
+        group(
+          'Langue et couleur',
+          [
+            [
+              'lang',
+              select(
+                'Langue de la page',
+                [
+                  ['fr', 'Français'],
+                  ['en', 'English']
+                ],
+                { help: 'Langue des textes fixes de la page (boutons, menu de partage…) et des moteurs de recherche.' }
+              )
+            ],
+            [
+              'accent',
+              // Les vignettes des thèmes prennent tout de suite la nouvelle couleur.
+              color('Couleur d’accent principale', {
+                onChange: (value) => {
+                  for (const preview of document.querySelectorAll('.theme-preview')) {
+                    preview.style.setProperty('--tp-accent', value);
+                  }
+                }
+              })
+            ]
+          ],
+          { grid: true }
+        )
+      ],
+      [
+        'site',
+        group('', [
+          [
+            'theme',
+            themes('Thème de la page', {
+              help: 'Change la mise en page et le style de la page publique. Le mode clair / sombre et la couleur d’accent sont conservés.'
+            })
+          ]
+        ])
+      ],
+      [
+        'site',
+        group(
+          'Polices',
+          [
+            ['fontDisplay', font('Police des titres', { sample: 'Prénom Nom', weight: 800 })],
+            [
+              'fontBody',
+              font('Police du texte', { sample: 'Portez ce vieux whisky au juge blond qui fume', weight: 400 })
+            ]
+          ],
+          {
+            help: 'Les polices « déjà installées » changent un peu d’un appareil à l’autre. Pour un rendu identique partout, envoie ta propre police.'
+          }
+        )
+      ]
+    ]
   }
 ];
 
@@ -549,11 +590,22 @@ function sectionIdFromHash() {
   return SECTIONS.some((s) => s.id === id) ? id : '';
 }
 
+// Menu des sections, en deux groupes : le contenu de la page, puis sa mise en forme.
+const NAV_GROUPS = { content: 'Contenu', design: 'Mise en forme' };
+
 function renderNav() {
-  $sidenav.replaceChildren(
-    ...SECTIONS.map((s) => {
-      const list = SECTION_COUNTS[s.id] && content ? content[SECTION_COUNTS[s.id]] : null;
-      return el(
+  const items = [];
+  let group = null;
+  for (const s of SECTIONS) {
+    const sectionGroup = s.group || 'content';
+    if (sectionGroup !== group) {
+      if (group) items.push(el('span', { class: 'nav-sep', 'aria-hidden': 'true' }));
+      items.push(el('span', { class: 'nav-group' }, t(NAV_GROUPS[sectionGroup])));
+      group = sectionGroup;
+    }
+    const list = SECTION_COUNTS[s.id] && content ? content[SECTION_COUNTS[s.id]] : null;
+    items.push(
+      el(
         'a',
         {
           href: `#s-${s.id}`,
@@ -565,9 +617,10 @@ function renderNav() {
         },
         el('span', {}, t(s.title)),
         Array.isArray(list) ? el('span', { class: 'nav-count' }, String(list.length)) : null
-      );
-    })
-  );
+      )
+    );
+  }
+  $sidenav.replaceChildren(...items);
 }
 
 // Une seule section visible à la fois ; la dernière consultée est retenue.
@@ -612,9 +665,8 @@ function renderNode(sch, parent, key, path) {
   const value = parent[key];
   switch (sch.kind) {
     case 'group': {
-      // inline : les champs du groupe sont rangés directement dans l'objet parent.
-      if (!sch.inline && (!value || typeof value !== 'object')) parent[key] = {};
-      const obj = sch.inline ? parent : parent[key];
+      if (!value || typeof value !== 'object') parent[key] = {};
+      const obj = parent[key];
       const inner = sch.fields.map(([k, s]) => renderNode(s, obj, k, `${path}.${k}`));
       const box = el('div', { class: sch.grid ? 'grid' : 'stack' }, inner);
       if (sch.help) box.prepend(el('small', { class: 'help' }, t(sch.help)));
@@ -709,11 +761,15 @@ function renderColor(sch, parent, key) {
   picker.addEventListener('input', () => {
     input.value = picker.value.toUpperCase();
     parent[key] = input.value;
+    sch.onChange?.(input.value);
     markDirty();
   });
   input.addEventListener('input', () => {
     parent[key] = input.value.trim();
-    if (/^#[0-9a-f]{6}$/i.test(input.value.trim())) picker.value = input.value.trim();
+    if (/^#[0-9a-f]{6}$/i.test(input.value.trim())) {
+      picker.value = input.value.trim();
+      sch.onChange?.(input.value.trim());
+    }
     markDirty();
   });
   const fid = (input.id = id());
@@ -818,6 +874,7 @@ function renderFont(sch, parent, key) {
       kind: 'image',
       label: 'Fichier de la police',
       file: true,
+      uploadKind: 'font',
       accept: '.woff2,.woff,.ttf,.otf',
       help: 'WOFF2 de préférence (le plus léger). Vérifie que la licence de la police autorise son usage sur un site.',
       onChange: () => update()
@@ -834,7 +891,15 @@ function renderFont(sch, parent, key) {
     sample.style.fontFamily = family;
     sample.hidden = !choice || (choice === 'custom' && family === 'inherit');
   }
+  // Une police envoyée puis abandonnée n'est plus référencée : le serveur pourra supprimer le
+  // fichier. On le garde en mémoire le temps de la visite, au cas où l'on revient à « Ma police ».
+  let setAside = '';
   select.addEventListener('change', () => {
+    if (select.value === 'custom' && !parent[fileKey] && setAside) parent[fileKey] = setAside;
+    if (select.value !== 'custom' && parent[fileKey]) {
+      setAside = parent[fileKey];
+      delete parent[fileKey];
+    }
     if (select.value) parent[key] = select.value;
     else delete parent[key];
     update();
@@ -872,7 +937,9 @@ function renderImage(sch, parent, key) {
     fd.append('file', file.files[0]);
     setStatus('Envoi du fichier…');
     try {
-      const { url } = await api('/upload', { method: 'POST', body: fd });
+      // Type attendu par ce champ : police, document (CV) ou image.
+      const kind = sch.uploadKind || (sch.file ? 'document' : 'image');
+      const { url } = await api(`/upload?kind=${kind}`, { method: 'POST', body: fd });
       parent[key] = url;
       input.value = url;
       sch.onChange?.(url);

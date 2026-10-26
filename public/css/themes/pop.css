@@ -1,0 +1,41 @@
+/* Thème « Pop » de Folichon, chargé seulement quand il est choisi dans l'admin
+   (Apparence). Il s'ajoute à site.css : data-style est posé sur <html> par le serveur. */
+
+/* ---------- Pop : néo-brutalisme, gros contours et autocollants ---------- */
+:root[data-style="pop"] {
+  --c-page: light-dark(#FFF1C9, #17140E);
+  --c-surface: light-dark(#FFFFFF, #25211A);
+  --c-ink: light-dark(#111111, #FFF6E0);
+  --c-body: light-dark(#2E2A22, #E2DACA);
+  --c-muted: light-dark(#4A4436, #BDB4A2);
+  --c-line: light-dark(#111111, #FFF6E0);
+  --c-dash: light-dark(#111111, #FFF6E0);
+  --c-hover: light-dark(#FFE48A, #3A3424);
+  --c-ring: light-dark(#111111, #FFF6E0);
+  --c-dots: light-dark(#111111, #8C836F);
+  --c-sublabel: light-dark(#4A4436, #BDB4A2);
+  --c-card-dark: light-dark(#111111, #0E0C08);
+  --r-xl: 20px; --r-lg: 18px; --r-md: 18px; --r-sm: 16px; --r-pill: 12px;
+  --pop-line: 3px solid var(--c-ink);
+  --pop-shadow: 7px 7px 0 var(--c-ink);
+}
+:root[data-style="pop"] body { background-image: radial-gradient(color-mix(in srgb, var(--c-ink) 14%, transparent) 1.2px, transparent 1.4px); background-size: 22px 22px; }
+:root[data-style="pop"] :is(.hero-card, .stat, .project, .mini, .card, .contact) { border: var(--pop-line); box-shadow: var(--pop-shadow); }
+:root[data-style="pop"] :is(.hero h1, .section-title, .card-title, .contact h2, .project h3) { text-transform: uppercase; letter-spacing: -0.03em; }
+:root[data-style="pop"] .hero h1 { letter-spacing: -0.01em; text-shadow: 3px 3px 0 var(--accent); }
+:root[data-style="pop"] .section-title { display: inline-block; padding: 4px 18px 10px; background: var(--accent); color: #FFFFFF; border: var(--pop-line); box-shadow: var(--pop-shadow); transform: rotate(-1.5deg); }
+:root[data-style="pop"] .stat:nth-child(odd) { transform: rotate(-2deg); }
+:root[data-style="pop"] .stat:nth-child(even) { transform: rotate(1.5deg); }
+:root[data-style="pop"] .mini:nth-child(3n + 1) { transform: rotate(-1.2deg); }
+:root[data-style="pop"] .mini:nth-child(3n + 2) { transform: rotate(1deg); }
+:root[data-style="pop"] .mini:hover { transform: rotate(0) translate(-3px, -3px); box-shadow: 10px 10px 0 var(--c-ink); }
+:root[data-style="pop"] .tag { transform: rotate(-4deg); font-size: 13px; font-weight: 700; }
+:root[data-style="pop"] .btn { border: 2px solid var(--c-ink); box-shadow: 4px 4px 0 var(--c-ink); text-transform: uppercase; letter-spacing: .02em; }
+:root[data-style="pop"] .btn:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--c-ink); filter: none; }
+:root[data-style="pop"] .btn:active { transform: translate(3px, 3px); box-shadow: 1px 1px 0 var(--c-ink); }
+:root[data-style="pop"] :is(.tag, .chip, .skill) { border: 2px solid var(--c-ink); }
+:root[data-style="pop"] .contact .btn-outline { border-color: #FFFFFF; box-shadow: 4px 4px 0 #111111; }
+:root[data-style="pop"] .hero-photo { padding: 0; border: var(--pop-line); box-shadow: var(--pop-shadow); transform: rotate(3deg); }
+:root[data-style="pop"] .hero-photo::before { display: none; }
+:root[data-style="pop"] .hero-photo img { border: 0; }
+:root[data-style="pop"] .fab { border: 2px solid var(--c-ink); box-shadow: 3px 3px 0 var(--c-ink); }

@@ -25,6 +25,11 @@ export function isNewer(candidate, current) {
   return false;
 }
 
+// Lien affiché dans l'admin : seulement une page de ce dépôt sur GitHub, sinon la liste des versions.
+export function releaseUrl(value) {
+  return typeof value === 'string' && value.startsWith(`https://github.com/${REPO}/`) ? value : RELEASES_URL;
+}
+
 export async function updateInfo({ enabled = true } = {}) {
   const base = { version: VERSION, latest: null, upToDate: null, url: RELEASES_URL };
   if (!enabled) return base;
@@ -40,7 +45,7 @@ export async function updateInfo({ enabled = true } = {}) {
       const release = await res.json();
       const latest = String(release.tag_name || '').replace(/^v/i, '');
       if (latest) {
-        info = { latest, upToDate: !isNewer(latest, VERSION), url: release.html_url || RELEASES_URL };
+        info = { latest, upToDate: !isNewer(latest, VERSION), url: releaseUrl(release.html_url) };
         ttl = TTL_MS;
       }
     }

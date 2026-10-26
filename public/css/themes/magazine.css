@@ -1,0 +1,62 @@
+/* Thème « Magazine » de Folichon, chargé seulement quand il est choisi dans l'admin
+   (Apparence). Il s'ajoute à site.css : data-style est posé sur <html> par le serveur. */
+
+/* ---------- Magazine : mise en page de journal, sans blocs ---------- */
+:root[data-style="magazine"] {
+  --c-page: light-dark(#F6F2EA, #12110F);
+  --c-surface: light-dark(#F6F2EA, #12110F);
+  --c-ink: light-dark(#141210, #F3EEE4);
+  --c-body: light-dark(#3F3A33, #CFC7B9);
+  --c-muted: light-dark(#5F584D, #A79F91);
+  --c-line: light-dark(#141210, #F3EEE4);
+  --c-dash: light-dark(#141210, #F3EEE4);
+  --c-hover: light-dark(#ECE5D8, #23201C);
+  --c-ring: light-dark(#8C8476, #6C655A);
+  --c-dots: light-dark(#B5AC9C, #5C564C);
+  --c-sublabel: light-dark(#6F685C, #9A9284);
+  --c-card-dark: light-dark(#141210, #F3EEE4);
+  --f-display: 'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif;
+  --r-xl: 0; --r-lg: 0; --r-md: 0; --r-sm: 0; --r-pill: 0;
+}
+:root[data-style="magazine"] main.wrap { gap: 0; }
+:root[data-style="magazine"] :is(.hero-card, .card, .contact, .mini, .project) { background: transparent; box-shadow: none; }
+:root[data-style="magazine"] .hero-card { padding: 24px 0 40px; border-top: 6px double var(--c-ink); border-bottom: 1px solid var(--c-ink); }
+:root[data-style="magazine"] .hero h1 { font-size: clamp(56px, 11vw, 168px); font-weight: 500; font-style: italic; letter-spacing: -0.04em; line-height: .85; }
+:root[data-style="magazine"] .hero-headline { font-weight: 500; font-size: clamp(24px, 3vw, 38px); }
+:root[data-style="magazine"] .hero-kicker, :root[data-style="magazine"] .kicker { text-transform: uppercase; letter-spacing: .18em; font-size: 12px; color: var(--c-ink); }
+:root[data-style="magazine"] .hero-desc { max-width: 620px; font-size: 18px; }
+:root[data-style="magazine"] .hero-desc::first-letter { float: left; font-family: var(--f-display); font-size: 4.2em; line-height: .8; padding: 6px 10px 0 0; color: var(--accent-text); }
+:root[data-style="magazine"] .hero-photo { flex-basis: 260px; padding: 0; border-radius: 0; box-shadow: none; filter: grayscale(1) contrast(1.1); }
+:root[data-style="magazine"] .hero-photo::before { display: none; }
+:root[data-style="magazine"] .hero-photo img { border-radius: 0; border: 0; }
+:root[data-style="magazine"] .btn { min-height: 44px; border: 1px solid var(--c-ink); }
+:root[data-style="magazine"] .btn-soft { background: transparent; }
+:root[data-style="magazine"] .stats { gap: 0; padding: 20px 0; border-bottom: 1px solid var(--c-ink); }
+:root[data-style="magazine"] .stat { background: transparent !important; color: var(--c-ink) !important; border-left: 1px solid var(--c-ink); padding: 8px 24px; flex-direction: column; align-items: flex-start; gap: 4px; }
+:root[data-style="magazine"] .stat:first-child { border-left: 0; padding-left: 0; }
+:root[data-style="magazine"] .stat-value { font-weight: 500; font-size: 72px; color: var(--accent-text); }
+:root[data-style="magazine"] :is(.section-title, .card-title, .contact h2) { font-weight: 500; letter-spacing: -0.03em; }
+:root[data-style="magazine"] .section-head { padding: 24px 0 24px; border-bottom: 1px solid var(--c-ink); }
+:root[data-style="magazine"] .projects, :root[data-style="magazine"] .duo { padding-top: 64px; }
+:root[data-style="magazine"] .project-list { gap: 0; grid-auto-rows: auto; }
+:root[data-style="magazine"] .project { color: var(--c-ink); border-bottom: 1px solid var(--c-ink); padding: 32px 0; gap: 32px; overflow: visible; }
+:root[data-style="magazine"] .project-text { padding: 0; --ink: var(--c-ink); --text: var(--c-body); --slogan: var(--c-muted); --surface: var(--c-hover); }
+:root[data-style="magazine"] .project h3 { font-weight: 500; font-style: italic; }
+:root[data-style="magazine"] .project-media { background: var(--bg); align-self: stretch; }
+:root[data-style="magazine"] .minis { gap: 0; }
+:root[data-style="magazine"] .mini { color: var(--c-ink); border-left: 1px solid var(--c-ink); padding: 24px; }
+:root[data-style="magazine"] .mini:first-child { border-left: 0; padding-left: 0; }
+:root[data-style="magazine"] .mini > * { --ink: var(--c-ink); --text: var(--c-body); }
+:root[data-style="magazine"] .mini-name { font-family: var(--f-display); font-weight: 600; }
+:root[data-style="magazine"] .mini-icon { background: transparent; border: 1px solid var(--c-ink); color: var(--c-ink); border-radius: 0; }
+:root[data-style="magazine"] .duo { gap: 0; }
+:root[data-style="magazine"] .card { padding: 32px 0; border-top: 6px double var(--c-ink); }
+:root[data-style="magazine"] .card-dark { color: var(--c-ink); }
+:root[data-style="magazine"] :is(.card-dark .kicker, .skill-group p, .languages p:first-child) { color: var(--c-muted); }
+:root[data-style="magazine"] .skill { background: transparent !important; color: var(--c-ink) !important; border: 1px solid var(--c-ink); font-weight: 500; }
+:root[data-style="magazine"] .languages { border-top-color: var(--c-ink); }
+:root[data-style="magazine"] .contact { color: var(--c-ink); padding: 48px 0; border-top: 6px double var(--c-ink); border-bottom: 1px solid var(--c-ink); }
+:root[data-style="magazine"] .contact .kicker { color: var(--c-ink); }
+:root[data-style="magazine"] .contact h2 { font-style: italic; }
+:root[data-style="magazine"] .btn-outline { color: var(--c-ink); border-color: var(--c-ink); }
+:root[data-style="magazine"] .site-footer { padding: 16px 0; }

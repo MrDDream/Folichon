@@ -1,0 +1,89 @@
+/* Thème « Rétro » de Folichon, chargé seulement quand il est choisi dans l'admin
+   (Apparence). Il s'ajoute à site.css : data-style est posé sur <html> par le serveur. */
+
+/* ---------- Rétro : fenêtres façon années 90, reliefs et barres de titre ---------- */
+:root[data-style="retro"] {
+  --c-page: light-dark(#008080, #002A2A);
+  --c-surface: light-dark(#C0C0C0, #3A3A3A);
+  --c-ink: light-dark(#000000, #F0F0F0);
+  --c-body: light-dark(#1A1A1A, #DADADA);
+  --c-muted: light-dark(#303030, #BDBDBD);
+  --c-line: light-dark(#808080, #1E1E1E);
+  --c-dash: light-dark(#808080, #6A6A6A);
+  --c-hover: light-dark(#D4D0C8, #4A4A4A);
+  --c-ring: light-dark(#FFFFFF, #9A9A9A);
+  --c-dots: light-dark(#7FCCCC, #3E7070);
+  --c-sublabel: light-dark(#E0FFFF, #9FCFCF);
+  --c-card-dark: light-dark(#C0C0C0, #3A3A3A);
+  --hi: light-dark(#FFFFFF, #6A6A6A);
+  --lo: light-dark(#404040, #000000);
+  --mid: light-dark(#808080, #262626);
+  --navy: light-dark(#000080, #9CC2FF);
+  --f-display: Tahoma, 'Segoe UI', Verdana, Geneva, sans-serif;
+  --f-body: Tahoma, 'Segoe UI', Verdana, Geneva, sans-serif;
+  --r-xl: 0; --r-lg: 0; --r-md: 0; --r-sm: 0; --r-pill: 0;
+  --bevel: inset -1px -1px var(--lo), inset 1px 1px var(--hi), inset -2px -2px var(--mid), inset 2px 2px var(--c-hover);
+  --sunken: inset -1px -1px var(--hi), inset 1px 1px var(--lo), inset -2px -2px var(--c-hover), inset 2px 2px var(--mid);
+}
+:root[data-style="retro"] body { font-size: 15px; }
+:root[data-style="retro"] :is(.sidenav a, .topnav a, .sidenav li.is-active > a .sn-label, .sidenav li.is-accent > a .sn-label, .sn-sub li.is-active .sn-sublabel) { color: #FFFFFF; }
+:root[data-style="retro"] .topnav { background: color-mix(in srgb, var(--c-page) 88%, transparent); }
+:root[data-style="retro"] .topnav a.is-active { background: var(--c-surface); color: var(--c-ink); }
+:root[data-style="retro"] :is(.hero-card, .project, .mini, .card, .contact, .stat) { background: var(--c-surface) !important; color: var(--c-ink) !important; box-shadow: var(--bevel); padding: 3px; }
+/* Barre de titre bleue avec son bouton de fermeture */
+:root[data-style="retro"] :is(.hero-card, .project, .mini, .card, .contact)::before { content: ''; flex: none; width: 100%; order: -2; align-self: stretch; height: 24px; padding: 0 6px; display: flex; align-items: center; font: 700 13px/1 var(--f-body); color: #FFFFFF; background: linear-gradient(90deg, #000080, #1084D0) no-repeat, #000080; background-size: calc(100% - 22px) 100%, 100%; white-space: nowrap; overflow: hidden; }
+:root[data-style="retro"] .hero-card::before { content: 'Profil.exe'; }
+:root[data-style="retro"] .project::before { content: 'Projet — ' attr(data-slug) '.exe'; }
+:root[data-style="retro"] .mini::before { content: 'Outil.exe'; }
+:root[data-style="retro"] #parcours::before { content: 'Parcours.txt — Bloc-notes'; }
+:root[data-style="retro"] #competences::before { content: 'Compétences.txt — Bloc-notes'; }
+:root[data-style="retro"] .contact::before { content: 'Contact.exe'; }
+:root[data-style="retro"] .hero-card { gap: 0; }
+:root[data-style="retro"] .hero-card > :not(.hero-photo) { padding: 24px; }
+:root[data-style="retro"] .hero-text { padding: 24px !important; }
+:root[data-style="retro"] .socials { margin: 0 12px 12px; border-top: 0; box-shadow: var(--sunken); background: var(--c-hover); padding: 12px !important; }
+:root[data-style="retro"] .hero-photo { padding: 0; margin: 24px; border-radius: 0; box-shadow: var(--sunken); flex-basis: 240px; }
+:root[data-style="retro"] .hero-photo::before { display: none; }
+:root[data-style="retro"] .hero-photo img { border-radius: 0; border: 3px solid transparent; }
+:root[data-style="retro"] :is(.hero h1, .section-title, .card-title, .contact h2, .project h3, .stat-value, .mini-name, .t-title, .hero-headline) { font-weight: 700; letter-spacing: -0.02em; }
+:root[data-style="retro"] :is(.section-title, .kicker) { color: #FFFFFF; }
+:root[data-style="retro"] .card .kicker, :root[data-style="retro"] .contact .kicker { color: var(--navy); }
+:root[data-style="retro"] .btn { min-height: 40px; background: var(--c-surface); color: var(--c-ink); box-shadow: var(--bevel); font-weight: 400; }
+:root[data-style="retro"] .btn:hover { transform: none; filter: none; }
+:root[data-style="retro"] .btn:active { box-shadow: var(--sunken); }
+:root[data-style="retro"] .btn-primary { font-weight: 700; outline: 1px solid var(--c-ink); outline-offset: -5px; }
+:root[data-style="retro"] .btn-social { color: var(--c-ink); background: var(--c-surface) !important; }
+:root[data-style="retro"] .stat { flex-direction: column; align-items: flex-start; padding: 16px 20px; }
+:root[data-style="retro"] .stat-value { color: var(--navy); }
+:root[data-style="retro"] .project { gap: 0; align-items: stretch; }
+:root[data-style="retro"] .project-text { --ink: var(--c-ink); --text: var(--c-body); --slogan: var(--navy); --surface: var(--c-hover); padding: 24px; }
+:root[data-style="retro"] .project-media { background: var(--bg); margin: 12px; box-shadow: var(--sunken); }
+:root[data-style="retro"] :is(.tag, .chip) { box-shadow: var(--bevel); }
+:root[data-style="retro"] .mini { gap: 10px; }
+:root[data-style="retro"] .mini > * { margin: 0 18px; }
+:root[data-style="retro"] .mini > :last-child { margin-bottom: 18px; }
+:root[data-style="retro"] .mini > * { --ink: var(--c-ink); --text: var(--c-body); }
+:root[data-style="retro"] .mini-icon { box-shadow: var(--sunken); border-radius: 0; background: #FFFFFF; }
+:root[data-style="retro"] .card { gap: 20px; }
+:root[data-style="retro"] .card > :not(:first-child) { margin: 0 20px; }
+:root[data-style="retro"] .card > :last-child { margin-bottom: 20px; }
+:root[data-style="retro"] .card-dark { color: var(--c-ink); }
+:root[data-style="retro"] :is(.skill-group p, .languages p:first-child) { color: var(--c-muted); }
+:root[data-style="retro"] .skill { box-shadow: var(--bevel); }
+:root[data-style="retro"] .languages { border-top: 0; box-shadow: var(--sunken); padding: 12px; background: var(--c-hover); }
+:root[data-style="retro"] .timeline .dot { border-radius: 0; border-color: var(--c-surface); }
+:root[data-style="retro"] .contact { gap: 24px; }
+:root[data-style="retro"] .contact > :not(:first-child) { margin: 0 28px; }
+:root[data-style="retro"] .contact > :last-child { margin-bottom: 28px; }
+:root[data-style="retro"] .site-footer, :root[data-style="retro"] .site-footer a { color: #FFFFFF; }
+:root[data-style="retro"] .fab { border-radius: 0; background: var(--c-surface); box-shadow: var(--bevel); border: 0; }
+
+/* Titres de fenêtres en anglais quand la langue du site est « en » */
+:root[data-style="retro"]:lang(en) .hero-card::before { content: 'Profile.exe'; }
+:root[data-style="retro"]:lang(en) .project::before { content: 'Project — ' attr(data-slug) '.exe'; }
+:root[data-style="retro"]:lang(en) .mini::before { content: 'Tool.exe'; }
+:root[data-style="retro"]:lang(en) #parcours::before { content: 'Experience.txt — Notepad'; }
+:root[data-style="retro"]:lang(en) #competences::before { content: 'Skills.txt — Notepad'; }
+@media (max-width: 640px) {
+  :root[data-style="retro"] .hero-photo { margin: 16px 16px 0; }
+}
