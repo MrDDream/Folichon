@@ -3,6 +3,7 @@
     "title": "[Prénom Nom] — CV & projets",
     "description": "Le CV et les projets de [Prénom Nom], [ton métier] à [Ville].",
     "accent": "#4F3BF5",
+    "theme": "folichon",
     "lang": "fr"
   },
   "nav": {

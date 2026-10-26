@@ -14,7 +14,7 @@
   // width/height lus dans le fichier : la place de l'image est réservée avant son chargement.
   const dims = (src) => { const size = imageSize(src); return size ? ` width="${size.width}" height="${size.height}"` : ''; };
 %><!doctype html>
-<html lang="<%= c.site?.lang || 'fr' %>">
+<html lang="<%= c.site?.lang || 'fr' %>" data-style="<%= h.siteTheme(c.site?.theme) %>">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">

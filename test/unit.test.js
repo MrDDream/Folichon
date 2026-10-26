@@ -9,6 +9,11 @@ import { createImageSizer } from '../src/images.js';
 import { createStore } from '../src/store.js';
 import { isNewer } from '../src/version.js';
 
+test('siteTheme : seuls les thèmes connus passent, sinon le thème par défaut', () => {
+  for (const name of h.siteThemes) assert.equal(h.siteTheme(name), name);
+  for (const bad of [undefined, '', 'inconnu', '" onload="x', 42, null]) assert.equal(h.siteTheme(bad), 'folichon');
+});
+
 test('safeUrl : seuls les liens sûrs passent', () => {
   for (const ok of [
     'https://a.fr',

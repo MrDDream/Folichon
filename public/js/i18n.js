@@ -114,6 +114,18 @@ const EN = {
   'Titre de l’onglet': 'Browser tab title',
   'Description (moteurs de recherche, partages)': 'Description (search engines, sharing)',
   'Couleur d’accent principale': 'Main accent colour',
+  'Thème de la page': 'Page theme',
+  'Change l’allure de la page publique (polices, fonds, arrondis). Le mode clair / sombre, la couleur d’accent et les couleurs des projets sont conservés.':
+    'Changes the look of the public page (fonts, backgrounds, corners). Light / dark mode, the accent colour and project colours are kept.',
+  'Le thème d’origine : arrondi, coloré, titres expressifs.':
+    'The original theme: rounded, colourful, expressive headings.',
+  Éditorial: 'Editorial',
+  'Papier crème, titres à empattements, angles nets.': 'Cream paper, serif headings, sharp corners.',
+  'Tout en police à chasse fixe, esprit console.': 'All monospace, console spirit.',
+  Épuré: 'Minimal',
+  'Noir et blanc, sobre ; l’accent est réservé aux boutons.':
+    'Black and white, understated; the accent is kept for buttons.',
+  'Néo-brutalisme : gros contours et ombres franches.': 'Neo-brutalism: thick outlines and hard shadows.',
   Menu: 'Menu',
   'Accueil (menu latéral)': 'Home (side menu)',
   Contact: 'Contact',

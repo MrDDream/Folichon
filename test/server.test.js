@@ -49,6 +49,7 @@ test('la page publique affiche le contenu par défaut', async () => {
   const html = await res.text();
   assert.match(html, /Appli mobile/);
   assert.match(html, /Service web/);
+  assert.match(html, /<html [^>]*data-style="folichon"/);
   assert.ok(res.headers.get('content-security-policy'));
 
   const icon = await fetch(`${BASE}/favicon.svg`);
@@ -131,6 +132,7 @@ test('connexion, modification et page publique mise à jour', async () => {
   content.profile.headline = 'Un *mot* <script>alert(1)</script>';
   content.socials[0].url = 'javascript:alert(1)';
   content.contact.email = 'ada@example.com';
+  content.site.theme = 'pop';
 
   const noHeader = await fetch(`${BASE + ADMIN}/api/content`, {
     method: 'PUT',
@@ -160,6 +162,7 @@ test('connexion, modification et page publique mise à jour', async () => {
 
   const html = await (await fetch(BASE)).text();
   assert.match(html, /Ada Test/);
+  assert.match(html, /<html [^>]*data-style="pop"/);
   assert.match(html, /<span class="hl">mot<\/span>/);
   assert.doesNotMatch(html, /<script>alert/);
   assert.doesNotMatch(html, /javascript:alert/);

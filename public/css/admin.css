@@ -1,4 +1,7 @@
 /* Administration et connexion — thème clair / sombre selon le système */
+/* Polices des vignettes de thème (chargées seulement si elles sont affichées) */
+@font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-display: swap; font-weight: 200 800; src: url('../fonts/bricolage-grotesque-latin.woff2') format('woff2-variations'); }
+@font-face { font-family: 'JetBrains Mono'; font-style: normal; font-display: swap; font-weight: 100 800; src: url('../fonts/jetbrains-mono-latin.woff2') format('woff2-variations'); }
 :root {
   color-scheme: light dark;
   --bg: light-dark(#F3F2F7, #0F0E15);
@@ -138,6 +141,26 @@ fieldset fieldset { background: var(--card-2); padding: 16px; }
 .field.check { flex-direction: row; align-items: center; gap: 8px; }
 .field.check label { color: var(--ink); font-weight: 500; }
 .help { color: var(--muted); font-size: 12px; }
+
+/* Choix du thème de la page publique */
+.theme-field .help { margin-top: -8px; }
+.theme-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 12px; }
+.theme-option { position: relative; display: flex; flex-direction: column; gap: 4px; padding: 8px 8px 12px; border: 1px solid var(--line); border-radius: 14px; background: var(--card); cursor: pointer; transition: border-color .15s, box-shadow .15s; }
+.theme-option:hover { border-color: var(--line-strong); }
+.theme-option input { position: absolute; opacity: 0; pointer-events: none; }
+.theme-option:has(input:checked) { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.theme-option:has(input:focus-visible) { outline: 3px solid color-mix(in srgb, var(--accent) 50%, transparent); outline-offset: 2px; }
+.theme-option:has(input:checked) .theme-name::after { content: '✓'; margin-left: 6px; color: var(--accent-text); }
+.theme-preview { display: flex; flex-direction: column; gap: 6px; height: 104px; padding: 10px; margin-bottom: 4px; border-radius: 9px; overflow: hidden; }
+.tp-card { flex: 1; display: flex; flex-direction: column; gap: 5px; padding: 8px 10px; }
+.tp-title { font-size: 20px; line-height: 1; letter-spacing: -0.03em; }
+.tp-lines { display: flex; flex-direction: column; gap: 3px; }
+.tp-lines span { height: 3px; border-radius: 2px; background: currentColor; opacity: .25; }
+.tp-lines span:last-child { width: 60%; }
+.tp-btn { width: 34px; height: 9px; margin-top: auto; }
+.tp-row { display: grid; grid-template-columns: 1fr 1fr; gap: 6px; height: 18px; }
+.theme-name { padding: 0 4px; font-weight: 700; font-size: 14px; }
+.theme-desc { padding: 0 4px; color: var(--muted); font-size: 12px; line-height: 1.35; }
 input[type="text"], input[type="password"], textarea, select { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--field); color: var(--ink); font: inherit; transition: border-color .15s, box-shadow .15s; }
 input[type="text"]:hover, textarea:hover, select:hover { border-color: var(--line-strong); }
 textarea { resize: vertical; line-height: 1.5; }

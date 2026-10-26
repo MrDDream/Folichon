@@ -7,6 +7,14 @@ export function color(value, fallback = '') {
   return typeof value === 'string' && HEX.test(value.trim()) ? value.trim() : fallback;
 }
 
+// Thèmes de la page publique, choisis dans l'administration. Le premier est celui par défaut ;
+// les styles de chacun sont à la fin de public/css/site.css.
+export const siteThemes = ['folichon', 'editorial', 'terminal', 'minimal', 'pop'];
+
+export function siteTheme(value) {
+  return siteThemes.includes(value) ? value : siteThemes[0];
+}
+
 // N'autorise que les liens sûrs : http(s), mailto, tel, ancres et chemins locaux.
 export function safeUrl(value) {
   if (typeof value !== 'string') return '';

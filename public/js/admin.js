@@ -23,6 +23,87 @@ const bool = (label, o = {}) => ({ kind: 'bool', label, ...o });
 const lines = (label, o = {}) => ({ kind: 'lines', label, ...o });
 const group = (label, fields, o = {}) => ({ kind: 'group', label, fields, ...o });
 const list = (label, item, o = {}) => ({ kind: 'list', label, item, ...o });
+const themes = (label, o = {}) => ({ kind: 'themes', label, ...o });
+
+// Thèmes de la page publique (même liste que siteThemes dans src/helpers.js).
+// `preview` décrit la vignette affichée dans l'admin, en mode clair.
+const BRICOLAGE = "'Bricolage Grotesque', system-ui, sans-serif";
+const SITE_THEMES = [
+  {
+    id: 'folichon',
+    name: 'Folichon',
+    description: 'Le thème d’origine : arrondi, coloré, titres expressifs.',
+    preview: {
+      page: '#F1F0F5',
+      surface: '#FFFFFF',
+      ink: '#15131F',
+      font: BRICOLAGE,
+      weight: 800,
+      radius: '10px',
+      pill: '999px'
+    }
+  },
+  {
+    id: 'editorial',
+    name: 'Éditorial',
+    description: 'Papier crème, titres à empattements, angles nets.',
+    preview: {
+      page: '#F4EFE6',
+      surface: '#FFFCF6',
+      ink: '#1F1B16',
+      font: "'Iowan Old Style', 'Palatino Linotype', Palatino, Georgia, serif",
+      weight: 600,
+      radius: '2px',
+      pill: '2px',
+      border: '1px solid #E2D9C9'
+    }
+  },
+  {
+    id: 'terminal',
+    name: 'Terminal',
+    description: 'Tout en police à chasse fixe, esprit console.',
+    preview: {
+      page: '#EDF1EC',
+      surface: '#FFFFFF',
+      ink: '#0E1A12',
+      font: "'JetBrains Mono', ui-monospace, monospace",
+      weight: 700,
+      radius: '2px',
+      pill: '1px',
+      border: '1px dashed #B9C7BC'
+    }
+  },
+  {
+    id: 'minimal',
+    name: 'Épuré',
+    description: 'Noir et blanc, sobre ; l’accent est réservé aux boutons.',
+    preview: {
+      page: '#FFFFFF',
+      surface: '#F4F4F4',
+      ink: '#111111',
+      font: 'system-ui, sans-serif',
+      weight: 700,
+      radius: '6px',
+      pill: '4px'
+    }
+  },
+  {
+    id: 'pop',
+    name: 'Pop',
+    description: 'Néo-brutalisme : gros contours et ombres franches.',
+    preview: {
+      page: '#FFF1C9',
+      surface: '#FFFFFF',
+      ink: '#111111',
+      font: BRICOLAGE,
+      weight: 800,
+      radius: '6px',
+      pill: '5px',
+      border: '2px solid #111111',
+      shadow: '3px 3px 0 #111111'
+    }
+  }
+];
 
 const theme = group(
   'Couleurs du bloc',
@@ -48,7 +129,13 @@ const SECTIONS = [
         group('Réglages du site', [
           ['title', text('Titre de l’onglet')],
           ['description', area('Description (moteurs de recherche, partages)')],
-          ['accent', color('Couleur d’accent principale')]
+          ['accent', color('Couleur d’accent principale')],
+          [
+            'theme',
+            themes('Thème de la page', {
+              help: 'Change l’allure de la page publique (polices, fonds, arrondis). Le mode clair / sombre, la couleur d’accent et les couleurs des projets sont conservés.'
+            })
+          ]
         ])
       ],
       [
@@ -636,6 +723,8 @@ function renderNode(sch, parent, key, path) {
       return renderColor(sch, parent, key);
     case 'image':
       return renderImage(sch, parent, key);
+    case 'themes':
+      return renderThemes(sch, parent, key);
     default:
       return el('p', {}, t('Champ inconnu : {kind}', { kind: sch.kind }));
   }
@@ -667,6 +756,59 @@ function renderColor(sch, parent, key) {
     el('label', { for: fid }, t(sch.label)),
     el('div', { class: 'color-row' }, picker, input),
     sch.help ? el('small', { class: 'help' }, t(sch.help)) : null
+  );
+}
+
+// Choix du thème : une vignette par thème, sous forme de boutons radio.
+function renderThemes(sch, parent, key) {
+  const current = SITE_THEMES.some((th) => th.id === parent[key]) ? parent[key] : SITE_THEMES[0].id;
+  const accent = /^#[0-9a-f]{6}$/i.test(parent.accent ?? '') ? parent.accent : '#4F3BF5';
+  const name = id();
+  const cards = SITE_THEMES.map((th) => {
+    const p = th.preview;
+    const input = el('input', {
+      type: 'radio',
+      name,
+      value: th.id,
+      checked: th.id === current,
+      onchange: () => {
+        parent[key] = th.id;
+        markDirty();
+      }
+    });
+    const box = `background: ${p.surface}; border-radius: ${p.radius}; border: ${p.border || '0'}; box-shadow: ${p.shadow || 'none'}`;
+    const preview = el(
+      'span',
+      { class: 'theme-preview', 'aria-hidden': 'true', style: `background: ${p.page}; color: ${p.ink}` },
+      el(
+        'span',
+        { class: 'tp-card', style: box },
+        el('span', { class: 'tp-title', style: `font-family: ${p.font}; font-weight: ${p.weight}` }, 'Aa'),
+        el('span', { class: 'tp-lines' }, el('span', {}), el('span', {})),
+        el('span', { class: 'tp-btn', style: `background: ${accent}; border-radius: ${p.pill}` })
+      ),
+      el(
+        'span',
+        { class: 'tp-row' },
+        el('span', { style: box }),
+        el('span', { style: `${box}; background: ${accent}` })
+      )
+    );
+    return el(
+      'label',
+      { class: 'theme-option' },
+      input,
+      preview,
+      el('span', { class: 'theme-name' }, t(th.name)),
+      el('small', { class: 'theme-desc' }, t(th.description))
+    );
+  });
+  return el(
+    'fieldset',
+    { class: 'theme-field' },
+    el('legend', {}, t(sch.label)),
+    sch.help ? el('small', { class: 'help' }, t(sch.help)) : null,
+    el('div', { class: 'theme-grid' }, cards)
   );
 }
 
