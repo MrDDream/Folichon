@@ -115,17 +115,24 @@ const EN = {
   'Description (moteurs de recherche, partages)': 'Description (search engines, sharing)',
   'Couleur d’accent principale': 'Main accent colour',
   'Thème de la page': 'Page theme',
-  'Change l’allure de la page publique (polices, fonds, arrondis). Le mode clair / sombre, la couleur d’accent et les couleurs des projets sont conservés.':
-    'Changes the look of the public page (fonts, backgrounds, corners). Light / dark mode, the accent colour and project colours are kept.',
-  'Le thème d’origine : arrondi, coloré, titres expressifs.':
-    'The original theme: rounded, colourful, expressive headings.',
-  Éditorial: 'Editorial',
-  'Papier crème, titres à empattements, angles nets.': 'Cream paper, serif headings, sharp corners.',
-  'Tout en police à chasse fixe, esprit console.': 'All monospace, console spirit.',
-  Épuré: 'Minimal',
-  'Noir et blanc, sobre ; l’accent est réservé aux boutons.':
-    'Black and white, understated; the accent is kept for buttons.',
-  'Néo-brutalisme : gros contours et ombres franches.': 'Neo-brutalism: thick outlines and hard shadows.',
+  'Change la mise en page et le style de la page publique. Le mode clair / sombre et la couleur d’accent sont conservés.':
+    'Changes the layout and style of the public page. Light / dark mode and the accent colour are kept.',
+  'Le thème d’origine : blocs arrondis et colorés, titres expressifs.':
+    'The original theme: rounded, colourful blocks and expressive headings.',
+  'Mise en page de journal : grands titres à empattements, filets, pas de blocs.':
+    'Newspaper layout: large serif headings, rules, no blocks.',
+  'Fenêtres de console, police à chasse fixe, curseur qui clignote.':
+    'Console windows, monospace type, blinking cursor.',
+  Rétro: 'Retro',
+  'Fenêtres années 90 : reliefs gris, barres de titre bleues, fond vert d’eau.':
+    '90s windows: grey bevels, blue title bars, teal desktop.',
+  Néon: 'Neon',
+  'Halos de couleur en fond et cartes en verre dépoli.': 'Glowing colour halos behind frosted-glass cards.',
+  'Néo-brutalisme : gros contours, ombres franches, autocollants penchés.':
+    'Neo-brutalism: thick outlines, hard shadows, tilted stickers.',
+  'CV sobre': 'Plain CV',
+  'Une seule colonne, comme un CV imprimé ; les captures sont masquées.':
+    'A single column, like a printed CV; screenshots are hidden.',
   Menu: 'Menu',
   'Accueil (menu latéral)': 'Home (side menu)',
   Contact: 'Contact',

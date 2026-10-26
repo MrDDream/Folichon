@@ -9,7 +9,7 @@ export function color(value, fallback = '') {
 
 // Thèmes de la page publique, choisis dans l'administration. Le premier est celui par défaut ;
 // les styles de chacun sont à la fin de public/css/site.css.
-export const siteThemes = ['folichon', 'editorial', 'terminal', 'minimal', 'pop'];
+export const siteThemes = ['folichon', 'magazine', 'terminal', 'retro', 'neon', 'pop', 'cv'];
 
 export function siteTheme(value) {
   return siteThemes.includes(value) ? value : siteThemes[0];
