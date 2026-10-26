@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="fr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title data-i18n>Connexion</title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="stylesheet" href="/assets/css/admin.css?v=<%= assetVersion %>">
+<script src="/assets/js/theme.js?v=<%= assetVersion %>"></script>
+</head>
+<body class="login-page">
+<div class="login-controls"><%- include('partials/admin-controls', { cls: '' }) %></div>
+<main class="login-card<%= step === 'enroll' ? ' is-wide' : '' %>">
+  <img class="login-logo" src="/assets/folichon.svg" width="52" height="52" alt="Folichon">
+  <h1 data-i18n>Administration</h1>
+
+  <% if (step === 'password') { %>
+  <p class="muted" data-i18n>Entre ton mot de passe pour modifier le contenu de ta page.</p>
+  <% if (error) { %><p class="alert" role="alert" data-i18n><%= error %></p><% } %>
+  <form method="post" action="<%= base %>/login">
+    <label for="password" data-i18n>Mot de passe</label>
+    <input id="password" name="password" type="password" autocomplete="current-password" required autofocus>
+    <button type="submit" class="btn btn-primary" data-i18n>Continuer</button>
+  </form>
+
+  <% } else { %>
+  <% if (step === 'enroll') { %>
+  <p class="muted" data-i18n>Première connexion : active la double authentification. Elle sera demandée à chaque connexion.</p>
+  <ol class="steps">
+    <li data-i18n>Ouvre ton application d'authentification (Google Authenticator, Aegis, 2FAS, Bitwarden…) et ajoute un compte.</li>
+    <li><span data-i18n>Scanne ce QR code :</span>
+      <div class="qr"><%- qr %></div>
+      <details class="manual">
+        <summary data-i18n>Impossible de scanner ? Saisis la clé à la main</summary>
+        <code class="secret" id="totp-secret"><%= secret %></code>
+        <small class="help" data-i18n>Type : basé sur le temps · 6 chiffres · 30 secondes</small>
+      </details>
+    </li>
+    <li data-i18n>Entre le code à 6 chiffres affiché par l'application pour confirmer.</li>
+  </ol>
+  <% } else { %>
+  <p class="muted" data-i18n>Entre le code à 6 chiffres affiché par ton application d'authentification.</p>
+  <% } %>
+  <% if (error) { %><p class="alert" role="alert" data-i18n><%= error %></p><% } %>
+  <form method="post" action="<%= base %>/2fa">
+    <label for="code" data-i18n>Code à 6 chiffres</label>
+    <input id="code" name="code" class="code-input" type="text" inputmode="numeric" autocomplete="one-time-code" pattern="[0-9 ]{6,7}" maxlength="7" placeholder="123 456" required autofocus>
+    <button type="submit" class="btn btn-primary" data-i18n><%= step === 'enroll' ? 'Activer et se connecter' : 'Se connecter' %></button>
+  </form>
+  <form method="post" action="<%= base %>/logout" class="restart">
+    <button type="submit" class="btn btn-ghost btn-small" data-i18n>← Recommencer</button>
+  </form>
+  <% } %>
+</main>
+<script src="/assets/js/login.js?v=<%= assetVersion %>" type="module"></script>
+</body>
+</html>

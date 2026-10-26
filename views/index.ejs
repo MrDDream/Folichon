@@ -1,0 +1,303 @@
+<%
+  const accent = h.color(c.site?.accent, '#4F3BF5');
+  const p = c.profile || {};
+  const nav = c.nav || {};
+  const socials = h.list(c.socials).filter(s => h.safeUrl(s.url));
+  const photo = h.safeUrl(p.photo);
+  const title = c.site?.title || p.name || '';
+  const description = c.site?.description || p.intro || '';
+  // Les aperçus de partage (WhatsApp, LinkedIn…) exigent des adresses complètes.
+  const absolute = (url) => { try { return new URL(url, pageUrl).href; } catch { return ''; } };
+  const shareImage = photo ? absolute(photo) : '';
+  const share = h.shareLinks(pageUrl, title, description);
+  // width/height lus dans le fichier : la place de l'image est réservée avant son chargement.
+  const dims = (src) => { const size = imageSize(src); return size ? ` width="${size.width}" height="${size.height}"` : ''; };
+%><!doctype html>
+<html lang="<%= c.site?.lang || 'fr' %>">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title><%= title %></title>
+<link rel="icon" type="image/svg+xml" href="/favicon.svg">
+<link rel="apple-touch-icon" href="/apple-touch-icon.png">
+<link rel="canonical" href="<%= pageUrl %>">
+<meta name="description" content="<%= description %>">
+<meta property="og:type" content="website">
+<meta property="og:url" content="<%= pageUrl %>">
+<meta property="og:title" content="<%= title %>">
+<meta property="og:description" content="<%= description %>">
+<% if (shareImage) { %><meta property="og:image" content="<%= shareImage %>"><% } %>
+<meta name="twitter:card" content="<%= shareImage ? 'summary_large_image' : 'summary' %>">
+<link rel="preload" href="/assets/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
+<link rel="stylesheet" href="/assets/css/site.css?v=<%= assetVersion %>">
+<script src="/assets/js/theme.js?v=<%= assetVersion %>"></script>
+<style>:root{--accent:<%= accent %>}</style>
+</head>
+<body>
+
+<% const menu = [
+  ['accueil', nav.home || 'Accueil'],
+  ['projets', nav.projects || 'Projets'],
+  ['parcours', nav.timeline || 'Parcours'],
+  ['competences', nav.skills || 'Compétences'],
+  ['contact', nav.contact || 'Contact']
+];
+  // Une ancre par grand projet, pour le sous-menu (#projet-papote…), sans doublon.
+  const projectIds = [];
+  h.list(c.projects).forEach((pr, i) => {
+    let pid = `projet-${h.slug(pr.name) || i + 1}`;
+    while (projectIds.includes(pid)) pid += `-${i + 1}`;
+    projectIds.push(pid);
+  });
+%>
+<header class="wrap topnav">
+  <nav aria-label="Menu des sections">
+    <% menu.slice(1).forEach(([id, label]) => { %><a href="#<%= id %>"<% if (id === 'contact') { %> class="is-accent"<% } %>><%= label %></a>
+    <% }) %>
+  </nav>
+</header>
+
+<nav class="sidenav" aria-label="Plan de la page">
+  <ol>
+    <% menu.forEach(([id, label]) => { %>
+    <li<% if (id === 'contact') { %> class="is-accent"<% } %>><a href="#<%= id %>"><span class="sn-dot"></span><span class="sn-label"><%= label %></span></a>
+      <% if (id === 'projets' && projectIds.length) { %>
+      <ol class="sn-sub" style="--n: <%= projectIds.length %>">
+        <% h.list(c.projects).forEach((pr, i) => { %>
+        <li><a href="#<%= projectIds[i] %>"><span class="sn-subdot"></span><span class="sn-sublabel"><%= pr.name || `Projet ${i + 1}` %></span></a></li>
+        <% }) %>
+      </ol>
+      <% } %>
+    </li>
+    <% }) %>
+  </ol>
+</nav>
+
+<main class="wrap">
+
+  <section id="accueil" class="hero" aria-label="Présentation">
+    <div class="hero-card">
+      <div class="hero-text">
+        <div class="hero-intro">
+          <% if (p.kicker) { %><p class="hero-kicker mono"><%= p.kicker %></p><% } %>
+          <h1 class="display"><%= p.name %></h1>
+          <% if (p.headline) { %><p class="hero-headline display"><%- h.highlight(p.headline) %></p><% } %>
+          <% if (p.intro) { %><p class="hero-desc"><%= p.intro %></p><% } %>
+        </div>
+        <div class="row">
+          <a class="btn btn-lg btn-primary" href="#projets"><%= p.primaryButton || 'Voir mes projets' %>
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M13 6l6 6-6 6"/></svg>
+          </a>
+          <% if (h.safeUrl(p.cvUrl)) { %>
+          <a class="btn btn-lg btn-soft" href="<%= h.safeUrl(p.cvUrl) %>" download>
+            <svg aria-hidden="true" width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v12"/><path d="M7 10l5 5 5-5"/><path d="M5 21h14"/></svg>
+            <%= p.cvLabel || 'Télécharger mon CV' %>
+          </a>
+          <% } %>
+        </div>
+      </div>
+      <% if (photo) { %>
+      <div class="hero-photo"><img src="<%= photo %>"<%- dims(photo) %> alt="Photo de <%= p.name %>" decoding="async"></div>
+      <% } %>
+      <% if (socials.length) { %>
+      <nav class="socials" aria-label="Réseaux">
+        <span class="socials-label mono"><%= p.socialsLabel || 'Me retrouver' %></span>
+        <% socials.forEach(s => { const b = h.social(s.type); %>
+        <a class="btn btn-social" href="<%= h.safeUrl(s.url) %>" rel="me noopener" target="_blank" style="background: <%= h.color(s.color, b.color) %>"><%- b.svg %><%= s.label %></a>
+        <% }) %>
+      </nav>
+      <% } %>
+    </div>
+
+    <% if (h.list(c.stats).length) { %>
+    <div class="stats">
+      <% h.list(c.stats).forEach(s => { %>
+      <div class="stat" style="background: <%= h.color(s.bg, accent) %>; color: <%= h.color(s.text, '#FFFFFF') %>">
+        <span class="stat-value display"><%= s.value %></span><span><%= s.label %></span>
+      </div>
+      <% }) %>
+    </div>
+    <% } %>
+  </section>
+
+  <section id="projets" class="projects" aria-labelledby="titre-projets">
+    <% const ps = c.projectsSection || {}; %>
+    <div class="section-head">
+      <div>
+        <p class="kicker mono"><%= ps.kicker %></p>
+        <h2 id="titre-projets" class="section-title display"><%= ps.title %></h2>
+      </div>
+      <% if (h.safeUrl(ps.linkUrl)) { %><a class="btn btn-white" href="<%= h.safeUrl(ps.linkUrl) %>" target="_blank" rel="noopener"><%= ps.linkLabel %></a><% } %>
+    </div>
+
+    <div class="project-list">
+    <% h.list(c.projects).forEach((pr, pi) => {
+      const t = pr.theme || {};
+      const m = pr.media || {};
+      const imgs = h.list(m.images).map(h.safeUrl).filter(Boolean);
+      const left = pr.imageSide === 'left';
+      const style = [
+        `--bg:${h.color(t.bg, '#FFFFFF')}`, `--ink:${h.color(t.ink, '#15131F')}`, `--text:${h.color(t.text, '#4A4659')}`,
+        `--slogan:${h.color(t.slogan, h.color(t.ink, '#15131F'))}`, `--accent:${h.color(t.accent, accent)}`,
+        `--on-accent:${h.color(t.onAccent, '#FFFFFF')}`, `--surface:${h.color(t.surface, '#FFFFFF')}`
+      ].join(';');
+    %>
+    <article id="<%= projectIds[pi] %>" class="project<%= left ? ' media-left' : '' %>" style="<%= style %>">
+      <div class="project-text">
+        <% if (pr.tag) { %><span class="tag mono"><%= pr.tag %></span><% } %>
+        <h3 class="display"><%= pr.name %></h3>
+        <% if (pr.tagline) { %><p class="tagline"><%= pr.tagline %></p><% } %>
+        <% if (pr.description) { %><p class="desc"><%= pr.description %></p><% } %>
+        <% if (h.list(pr.bullets).filter(Boolean).length) { %>
+        <ul><% h.list(pr.bullets).filter(Boolean).forEach(b => { %><li><%= b %></li><% }) %></ul>
+        <% } %>
+        <% if (h.list(pr.stack).filter(Boolean).length) { %>
+        <div class="chips"><% h.list(pr.stack).filter(Boolean).forEach(s => { %><span class="chip mono"><%= s %></span><% }) %></div>
+        <% } %>
+        <div class="row">
+          <% if (h.safeUrl(pr.codeUrl)) { %><a class="btn btn-accent" href="<%= h.safeUrl(pr.codeUrl) %>" target="_blank" rel="noopener">Voir le code ↗</a><% } %>
+          <% if (h.safeUrl(pr.siteUrl)) { %><a class="btn btn-surface" href="<%= h.safeUrl(pr.siteUrl) %>" target="_blank" rel="noopener">Site du projet ↗</a><% } %>
+        </div>
+      </div>
+      <% if (imgs.length) { %>
+        <% if (m.type === 'browser') { %>
+        <div class="project-media media-browser">
+          <div class="browser">
+            <div class="browser-bar"><span class="dots"><span></span><span></span><span></span></span><% if (m.browserUrl) { %><span class="browser-url mono"><%= m.browserUrl %></span><% } %></div>
+            <img src="<%= imgs[0] %>"<%- dims(imgs[0]) %> alt="<%= pr.name %> : capture d'écran" loading="lazy" decoding="async">
+          </div>
+        </div>
+        <% } else if (m.type === 'wide') { %>
+        <div class="project-media media-wide"><img src="<%= imgs[0] %>"<%- dims(imgs[0]) %> alt="<%= pr.name %> : captures d'écran" loading="lazy" decoding="async"></div>
+        <% } else { %>
+        <div class="project-media media-phones<%= m.framed ? ' is-framed' : '' %>">
+          <% imgs.slice(0, 2).forEach((src, i) => { %><img src="<%= src %>"<%- dims(src) %> alt="<%= pr.name %> : écran <%= i + 1 %>" loading="lazy" decoding="async"><% }) %>
+        </div>
+        <% } %>
+      <% } %>
+    </article>
+    <% }) %>
+    </div>
+
+    <% if (h.list(c.miniProjects).length) { %>
+    <div class="minis">
+      <% h.list(c.miniProjects).forEach(mp => {
+        const style = `--bg:${h.color(mp.bg, '#FFFFFF')};--ink:${h.color(mp.ink, '#15131F')};--text:${h.color(mp.text, '#4A4659')};--icon:${h.color(mp.iconColor, accent)}`;
+        const url = h.safeUrl(mp.url);
+      %>
+      <<%= url ? 'a' : 'div' %> class="mini"<% if (url) { %> href="<%= url %>" target="_blank" rel="noopener"<% } %> style="<%= style %>">
+        <span class="mini-icon"><%- h.icon(mp.icon) %></span>
+        <span class="mini-name display"><%= mp.name %><%= url ? ' ↗' : '' %></span>
+        <span class="mini-desc"><%= mp.description %></span>
+        <% if (mp.stack) { %><span class="mini-stack mono"><%= mp.stack %></span><% } %>
+      </<%= url ? 'a' : 'div' %>>
+      <% }) %>
+    </div>
+    <% } %>
+  </section>
+
+  <div class="duo">
+    <section id="parcours" class="card card-white" aria-labelledby="titre-parcours">
+      <div class="section-head" style="padding: 0">
+        <div>
+          <p class="kicker mono"><%= c.timelineSection?.kicker %></p>
+          <h2 id="titre-parcours" class="card-title display"><%= c.timelineSection?.title %></h2>
+        </div>
+      </div>
+      <ol class="timeline">
+        <% h.list(c.timeline).forEach(t => { %>
+        <li>
+          <span class="dot" style="<%= h.color(t.dot) ? `--dot:${h.color(t.dot)}` : '' %>"></span>
+          <% if (t.period) { %><span class="t-period mono"><%= t.period %></span><% } %>
+          <span class="t-title display"><%= t.title %></span>
+          <% if (t.org) { %><span class="t-org"><%= t.org %></span><% } %>
+          <% const tasks = h.bulletLines(t.description); %>
+          <% if (tasks.length) { %><ul class="t-tasks"><% tasks.forEach(task => { %><li><%= task %></li><% }) %></ul><% } %>
+        </li>
+        <% }) %>
+      </ol>
+    </section>
+
+    <section id="competences" class="card card-dark" aria-labelledby="titre-competences">
+      <div class="section-head" style="padding: 0">
+        <div>
+          <p class="kicker mono"><%= c.skillsSection?.kicker %></p>
+          <h2 id="titre-competences" class="card-title display"><%= c.skillsSection?.title %></h2>
+        </div>
+      </div>
+      <% h.list(c.skills).forEach(g => { %>
+      <div class="skill-group">
+        <p><%= g.group %></p>
+        <div class="skills-list">
+          <% h.list(g.items).filter(Boolean).forEach(it => { %><span class="skill" style="background: <%= h.color(g.bg, '#C9BCFF') %>; color: <%= h.color(g.text, '#15131F') %>"><%= it %></span><% }) %>
+        </div>
+      </div>
+      <% }) %>
+      <% if (c.languages?.value) { %>
+      <div class="languages"><p><%= c.languages.label || 'Langues' %></p><p><%= c.languages.value %></p></div>
+      <% } %>
+    </section>
+  </div>
+
+  <% const ct = c.contact || {}; const mail = h.text(ct.email).trim(); %>
+  <section id="contact" class="contact" aria-labelledby="titre-contact">
+    <p class="kicker mono"><%= ct.kicker %></p>
+    <h2 id="titre-contact" class="display"><%= ct.title %></h2>
+    <div class="row">
+      <% h.list(ct.links).filter(l => h.safeUrl(l.url)).forEach(l => { const brandType = h.brandOf(l.url); %>
+      <a class="btn btn-xl btn-outline" href="<%= h.safeUrl(l.url) %>" target="_blank" rel="noopener"><% if (brandType) { %><%- h.social(brandType).svg %><% } %><%= l.label %></a>
+      <% }) %>
+      <% if (mail) { %>
+      <%# L'adresse n'apparaît ni à l'écran ni en clair dans le code : site.js la reconstitue au clic. %>
+      <button type="button" class="btn btn-xl btn-outline" data-mail="<%= h.hideEmail(mail) %>">
+        <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg>
+        <%= ct.emailButton || 'E-mail ↗' %>
+      </button>
+      <% } %>
+    </div>
+  </section>
+
+  <footer class="site-footer">
+    <p><%= c.footer?.left %></p>
+    <p><%= c.footer?.right %></p>
+    <% if (c.footer?.poweredBy !== false) { %>
+    <p class="powered">Powered by <a href="https://github.com/MrDDream/Folichon" target="_blank" rel="noopener">Folichon</a></p>
+    <% } %>
+  </footer>
+</main>
+
+<%# Menu de partage du site, utilisé quand celui du téléphone n'est pas disponible (site en HTTP, ordinateur…). %>
+<dialog class="share-sheet" aria-labelledby="share-title">
+  <div class="share-inner">
+  <div class="share-head">
+    <h2 id="share-title" class="display">Partager</h2>
+    <button type="button" class="share-close" aria-label="Fermer">
+      <svg aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><path d="M6 6l12 12M18 6L6 18"/></svg>
+    </button>
+  </div>
+  <div class="share-grid">
+    <a data-share="whatsapp" href="<%= share.whatsapp %>" target="_blank" rel="noopener" style="--c:#25D366"><span class="share-ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2a10 10 0 0 0-8.6 15.1L2 22l5-1.3A10 10 0 1 0 12 2zm0 1.8a8.2 8.2 0 1 1-4.2 15.3l-.3-.2-3 .8.8-2.9-.2-.3A8.2 8.2 0 0 1 12 3.8zm-3.2 4c-.2 0-.5 0-.7.3-.3.3-1 1-1 2.4s1 2.8 1.2 3c.1.2 2 3.2 5 4.4 2.5 1 3 .8 3.5.7.6 0 1.8-.7 2-1.4.3-.7.3-1.3.2-1.4l-.5-.3-1.8-.9c-.3-.1-.4-.1-.6.1l-.8 1c-.2.2-.3.2-.6.1a6.7 6.7 0 0 1-3.3-2.9c-.3-.4.2-.4.7-1.3l.1-.4-.9-2c-.2-.6-.5-.5-.6-.5h-.6z"/></svg></span>WhatsApp</a>
+    <a data-share="telegram" href="<%= share.telegram %>" target="_blank" rel="noopener" style="--c:#229ED9"><span class="share-ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M21.4 4.2 2.9 11.3c-1.3.5-1.2 1.2-.2 1.5l4.7 1.5 1.8 5.6c.2.6.4.8.8.8s.6-.2.9-.5l2.3-2.2 4.8 3.5c.9.5 1.5.2 1.7-.8l3.1-14.7c.3-1.3-.5-1.9-1.4-1.5zM9.7 14.6l-.4 3.8-1.6-5 9.9-6.3c.5-.3.9-.1.5.2l-8.4 7.3z"/></svg></span>Telegram</a>
+    <a data-share="sms" href="<%= share.sms %>" style="--c:#34C759"><span class="share-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12a8 8 0 0 1-11.6 7.1L4 20.5l1.4-4.9A8 8 0 1 1 21 12z"/></svg></span>SMS</a>
+    <a data-share="email" href="<%= share.email %>" style="--c:#6B6680"><span class="share-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 7l9 6 9-6"/></svg></span>E-mail</a>
+    <a data-share="linkedin" href="<%= share.linkedin %>" target="_blank" rel="noopener" style="--c:#0A66C2"><span class="share-ico"><%- h.social('linkedin').svg %></span>LinkedIn</a>
+    <a data-share="facebook" href="<%= share.facebook %>" target="_blank" rel="noopener" style="--c:#1877F2"><span class="share-ico"><svg viewBox="0 0 24 24" fill="currentColor"><path d="M13.5 21v-7.5H16l.4-3h-2.9V8.6c0-.9.3-1.5 1.5-1.5h1.6V4.4c-.3 0-1.2-.1-2.3-.1-2.3 0-3.8 1.4-3.8 3.9v2.3H8v3h2.5V21h3z"/></svg></span>Facebook</a>
+    <a data-share="x" href="<%= share.x %>" target="_blank" rel="noopener" style="--c:#000000"><span class="share-ico"><%- h.social('x').svg %></span>X</a>
+    <button type="button" data-share="copy" style="--c:var(--accent)"><span class="share-ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M10 14a4 4 0 0 0 5.7 0l3-3a4 4 0 0 0-5.7-5.7l-1 1"/><path d="M14 10a4 4 0 0 0-5.7 0l-3 3a4 4 0 0 0 5.7 5.7l1-1"/></svg></span><span class="copy-label">Copier le lien</span></button>
+  </div>
+  </div>
+</dialog>
+<div class="fab-stack">
+  <%# Masqué sans JavaScript : site.js l'affiche et gère le partage. %>
+  <button type="button" class="fab share-btn" aria-label="Partager la page" title="Partager la page" hidden>
+    <svg aria-hidden="true" width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><path d="M8.6 13.5l6.8 4M15.4 6.5l-6.8 4"/></svg>
+  </button>
+  <button type="button" class="fab theme-toggle" aria-label="Changer de thème">
+    <svg class="icon-moon" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.8A9 9 0 1 1 11.2 3a7 7 0 0 0 9.8 9.8z"/></svg>
+    <svg class="icon-sun" aria-hidden="true" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></svg>
+  </button>
+</div>
+<script src="/assets/js/site.js?v=<%= assetVersion %>" defer></script>
+</body>
+</html>

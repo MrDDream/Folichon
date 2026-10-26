@@ -1,0 +1,7 @@
+node_modules
+data
+package-lock.json
+public/fonts
+# Les vues EJS et le CSS en une ligne par règle gardent leur mise en forme actuelle.
+views
+public/css

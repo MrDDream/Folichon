@@ -1,0 +1,266 @@
+{
+  "site": {
+    "title": "[Prénom Nom] — CV & projets",
+    "description": "Le CV et les projets de [Prénom Nom], [ton métier] à [Ville].",
+    "accent": "#4F3BF5",
+    "lang": "fr"
+  },
+  "nav": {
+    "home": "Accueil",
+    "projects": "Projets",
+    "timeline": "Parcours",
+    "skills": "Compétences",
+    "contact": "Contact"
+  },
+  "profile": {
+    "kicker": "Salut, moi c'est",
+    "name": "[Prénom Nom]",
+    "headline": "Je conçois des *applications* et des *outils* qui rendent service.",
+    "intro": "[Ton métier] · basé à [Ville]. Deux ou trois phrases sur ce que tu fais, ce qui te motive et ce que tu cherches.",
+    "photo": "",
+    "primaryButton": "Voir mes projets",
+    "cvLabel": "Télécharger mon CV",
+    "cvUrl": "",
+    "socialsLabel": "Me retrouver"
+  },
+  "socials": [
+    {
+      "type": "github",
+      "label": "GitHub",
+      "url": "https://github.com/ton-pseudo"
+    },
+    {
+      "type": "linkedin",
+      "label": "LinkedIn",
+      "url": "https://www.linkedin.com/in/ton-profil"
+    }
+  ],
+  "stats": [
+    {
+      "value": "12",
+      "label": "projets publiés",
+      "bg": "",
+      "text": "#FFFFFF"
+    },
+    {
+      "value": "5",
+      "label": "ans d'expérience",
+      "bg": "#FFD84D",
+      "text": "#2B2200"
+    },
+    {
+      "value": "3",
+      "label": "langues parlées",
+      "bg": "#B9EEDB",
+      "text": "#0B3B2A"
+    }
+  ],
+  "projectsSection": {
+    "kicker": "01 / Projets",
+    "title": "Ce que je construis",
+    "linkLabel": "Tout voir sur GitHub ↗",
+    "linkUrl": "https://github.com/ton-pseudo"
+  },
+  "projects": [
+    {
+      "name": "Appli mobile",
+      "tag": "Android · iOS",
+      "tagline": "Une phrase d'accroche qui donne envie.",
+      "description": "Deux ou trois lignes pour présenter le projet : à quoi il sert, pour qui, et ce qui le rend différent.",
+      "bullets": [
+        "Une fonctionnalité dont tu es fier",
+        "Un choix technique intéressant",
+        "Un résultat concret (utilisateurs, étoiles…)"
+      ],
+      "stack": ["Kotlin", "Swift", "API REST"],
+      "codeUrl": "https://github.com/ton-pseudo",
+      "siteUrl": "",
+      "imageSide": "right",
+      "media": {
+        "type": "phones",
+        "framed": true,
+        "browserUrl": "",
+        "images": ["/assets/img/example-phone-home.svg", "/assets/img/example-phone-detail.svg"]
+      },
+      "theme": {
+        "bg": "#EDE8FD",
+        "ink": "#2C1A73",
+        "text": "#463A70",
+        "slogan": "#2C1A73",
+        "accent": "#6A47D6",
+        "onAccent": "#FFFFFF",
+        "surface": "#FFFFFF"
+      }
+    },
+    {
+      "name": "Service web",
+      "tag": "Web · Docker",
+      "tagline": "Ce que le service apporte, en une ligne.",
+      "description": "Présente le service : le problème qu'il résout et la façon dont on l'installe ou l'utilise.",
+      "bullets": ["Fonctionnalité principale", "Sécurité, performances ou accessibilité", "Tests, CI ou déploiement"],
+      "stack": ["Node.js", "PostgreSQL", "Docker"],
+      "codeUrl": "https://github.com/ton-pseudo",
+      "siteUrl": "",
+      "imageSide": "left",
+      "media": {
+        "type": "browser",
+        "framed": false,
+        "browserUrl": "mon-service.exemple",
+        "images": ["/assets/img/example-browser.svg"]
+      },
+      "theme": {
+        "bg": "#DCE9FF",
+        "ink": "#0B2A63",
+        "text": "#2B4A80",
+        "slogan": "#0B2A63",
+        "accent": "#1F5FD6",
+        "onAccent": "#FFFFFF",
+        "surface": "#FFFFFF"
+      }
+    },
+    {
+      "name": "Outil serveur",
+      "tag": "Android",
+      "tagline": "Administrer quelque chose, depuis son téléphone.",
+      "description": "Un projet plus technique : ce qu'il pilote, avec quelles API, et pourquoi tu l'as construit.",
+      "bullets": ["Tableau de bord en direct", "Actions à distance", "Journal et notifications"],
+      "stack": ["Kotlin", "Jetpack Compose", "SFTP"],
+      "codeUrl": "https://github.com/ton-pseudo",
+      "siteUrl": "",
+      "imageSide": "right",
+      "media": {
+        "type": "wide",
+        "framed": false,
+        "browserUrl": "",
+        "images": ["/assets/img/example-wide.svg"]
+      },
+      "theme": {
+        "bg": "#0A1A14",
+        "ink": "#FFFFFF",
+        "text": "#B4CBBE",
+        "slogan": "#4CD08A",
+        "accent": "#4CD08A",
+        "onAccent": "#072615",
+        "surface": "#16281F"
+      }
+    }
+  ],
+  "miniProjects": [
+    {
+      "name": "Petit outil",
+      "description": "Une ligne ou deux pour décrire un petit projet, un script ou une extension.",
+      "stack": "JS · Node.js",
+      "url": "https://github.com/ton-pseudo",
+      "icon": "terminal",
+      "bg": "#FFE2CF",
+      "ink": "#3D1A05",
+      "text": "#5C3218",
+      "iconColor": "#C2410C"
+    },
+    {
+      "name": "Bot",
+      "description": "Un bot Discord, Telegram ou autre, et ce qu'il automatise.",
+      "stack": "Node.js · Docker",
+      "url": "https://github.com/ton-pseudo",
+      "icon": "bot",
+      "bg": "#FFE1EA",
+      "ink": "#4A0E22",
+      "text": "#6E2A40",
+      "iconColor": "#BE185D"
+    },
+    {
+      "name": "Générateur",
+      "description": "Un petit site sans serveur qui génère ou convertit quelque chose.",
+      "stack": "HTML · JS",
+      "url": "https://github.com/ton-pseudo",
+      "icon": "braces",
+      "bg": "#FFF3C4",
+      "ink": "#3A2A00",
+      "text": "#5C4700",
+      "iconColor": "#A16207"
+    }
+  ],
+  "timelineSection": {
+    "kicker": "02 / Parcours",
+    "title": "Expériences & formation"
+  },
+  "timeline": [
+    {
+      "period": "[AAAA] — aujourd'hui",
+      "title": "[Intitulé du poste]",
+      "org": "[Entreprise] · [Ville]",
+      "description": "[2 à 3 lignes : tes missions, un résultat concret, les outils utilisés.]",
+      "dot": ""
+    },
+    {
+      "period": "[AAAA] — [AAAA]",
+      "title": "[Intitulé du poste]",
+      "org": "[Entreprise] · [Ville]",
+      "description": "[2 à 3 lignes : tes missions, un résultat concret, les outils utilisés.]",
+      "dot": "#FFD84D"
+    },
+    {
+      "period": "[AAAA] — [AAAA]",
+      "title": "[Diplôme ou certification]",
+      "org": "[École] · [Ville]",
+      "description": "",
+      "dot": "#5BE49B"
+    },
+    {
+      "period": "[AAAA] — [AAAA]",
+      "title": "[Diplôme ou certification]",
+      "org": "[École] · [Ville]",
+      "description": "",
+      "dot": "#FF8FB1"
+    }
+  ],
+  "skillsSection": {
+    "kicker": "03 / Compétences",
+    "title": "Ma boîte à outils"
+  },
+  "skills": [
+    {
+      "group": "Langages",
+      "bg": "#C9BCFF",
+      "text": "#1E0F5C",
+      "items": ["JavaScript", "Kotlin", "Python"]
+    },
+    {
+      "group": "Outils",
+      "bg": "#FFD84D",
+      "text": "#2B2200",
+      "items": ["Git", "Docker", "Linux"]
+    },
+    {
+      "group": "Savoir-faire",
+      "bg": "#B9EEDB",
+      "text": "#0B3B2A",
+      "items": ["Conception d'API", "Tests", "Documentation"]
+    }
+  ],
+  "languages": {
+    "label": "Langues",
+    "value": "Français · Anglais [niveau]"
+  },
+  "contact": {
+    "kicker": "04 / Contact",
+    "title": "Un poste, un projet ? Parlons-en.",
+    "email": "",
+    "emailButton": "E-mail ↗",
+    "links": [
+      {
+        "label": "GitHub ↗",
+        "url": "https://github.com/ton-pseudo"
+      },
+      {
+        "label": "LinkedIn ↗",
+        "url": "https://www.linkedin.com/in/ton-profil"
+      }
+    ]
+  },
+  "footer": {
+    "left": "© 2026 [Prénom Nom] · [Ville]",
+    "right": "Merci de ta visite !",
+    "poweredBy": true
+  }
+}

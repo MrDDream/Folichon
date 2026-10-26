@@ -1,0 +1,17 @@
+services:
+  folichon:
+    # Construit l'image depuis ce dossier. Pour utiliser l'image publiée à la place :
+    # image: ghcr.io/mrddream/folichon:latest
+    build: .
+    container_name: folichon
+    restart: unless-stopped
+    # Arrêt immédiat et propre sur « docker stop ».
+    init: true
+    ports:
+      # Port de l'hôte : HOST_PORT dans .env (3000 par défaut).
+      # Derrière un reverse proxy sur cette machine, préfère "127.0.0.1:${HOST_PORT:-3000}:3000".
+      - '${HOST_PORT:-3000}:3000'
+    # Mot de passe, adresse de l'admin et autres réglages privés : voir .env.example.
+    env_file: .env
+    volumes:
+      - ./data:/data

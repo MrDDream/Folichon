@@ -1,0 +1,49 @@
+{
+  "name": "folichon",
+  "version": "0.1.0",
+  "description": "Self-hosted CV and portfolio page with a hidden admin",
+  "keywords": [
+    "portfolio",
+    "cv",
+    "resume",
+    "self-hosted",
+    "docker",
+    "express"
+  ],
+  "homepage": "https://github.com/MrDDream/Folichon#readme",
+  "bugs": {
+    "url": "https://github.com/MrDDream/Folichon/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/MrDDream/Folichon.git"
+  },
+  "license": "MIT",
+  "author": "MrDDream",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "dev": "node --watch src/server.js",
+    "test": "node --test test/server.test.js test/unit.test.js",
+    "lint": "eslint .",
+    "format": "prettier --write .",
+    "check": "prettier --check . && eslint . && npm test"
+  },
+  "engines": {
+    "node": ">=20.19"
+  },
+  "dependencies": {
+    "compression": "^1.8.2",
+    "ejs": "^3.1.10",
+    "express": "^5.1.0",
+    "multer": "^2.0.2",
+    "qrcode": "^1.5.4"
+  },
+  "devDependencies": {
+    "@eslint/js": "^10.0.1",
+    "eslint": "^10.13.0",
+    "globals": "^17.13.0",
+    "prettier": "^3.9.10"
+  }
+}
