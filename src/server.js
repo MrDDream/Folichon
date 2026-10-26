@@ -11,6 +11,7 @@ import { createAuth } from './auth.js';
 import { createImageSizer } from './images.js';
 import * as totp from './totp.js';
 import { updateInfo } from './version.js';
+import { createZip, readZip, ZipError } from './zip.js';
 import * as helpers from './helpers.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
@@ -178,12 +179,13 @@ function normalizeType(file) {
   if (Object.hasOwn(FONT_EXTENSIONS, ext)) file.mimetype = FONT_EXTENSIONS[ext];
 }
 
+const bufferMatchesType = (head, mimetype) => head.length >= 12 && UPLOAD_TYPES[mimetype].looksRight(head);
 function fileMatchesType(file, mimetype) {
   const head = Buffer.alloc(16);
   const fd = fs.openSync(file, 'r');
   try {
     const read = fs.readSync(fd, head, 0, head.length, 0);
-    return read >= 12 && UPLOAD_TYPES[mimetype].looksRight(head);
+    return bufferMatchesType(head.subarray(0, read), mimetype);
   } finally {
     fs.closeSync(fd);
   }
@@ -238,6 +240,68 @@ async function pruneUploads() {
   } catch (err) {
     console.error(`[folichon] Nettoyage des envois impossible : ${err.message}`);
   }
+}
+
+// ---------- Sauvegarde complète (contenu + fichiers envoyés) ----------
+// Une archive ZIP : content.json à la racine, et dans uploads/ chaque fichier que le
+// contenu utilise. Elle se rouvre avec n'importe quel outil, et se réimporte dans l'admin.
+const UPLOAD_NAME = /^[A-Za-z0-9][A-Za-z0-9._-]{0,99}$/;
+const TYPE_BY_EXT = {
+  ...Object.fromEntries(Object.entries(UPLOAD_TYPES).map(([type, { ext }]) => [ext, type])),
+  '.jpeg': 'image/jpeg'
+};
+const uploadType = (name) => TYPE_BY_EXT[path.extname(name).toLowerCase()];
+const uploadsIn = (content) => [
+  ...new Set([...JSON.stringify(content).matchAll(/\/uploads\/([A-Za-z0-9][A-Za-z0-9._-]{0,99})/g)].map((m) => m[1]))
+];
+
+function backupArchive(content) {
+  const entries = [{ name: 'content.json', data: Buffer.from(JSON.stringify(content, null, 2)) }];
+  for (const name of uploadsIn(content)) {
+    try {
+      entries.push({ name: `uploads/${name}`, data: fs.readFileSync(path.join(UPLOAD_DIR, name)) });
+    } catch {
+      /* fichier déjà absent : le contenu y fait référence, mais il n'y a rien à sauvegarder */
+    }
+  }
+  return createZip(entries);
+}
+
+// Lit une archive de sauvegarde, vérifie chaque fichier comme un envoi depuis l'admin,
+// puis les dépose dans uploads/. Le contenu est renvoyé à l'admin sans être enregistré :
+// on le vérifie avant de cliquer sur « Enregistrer », comme pour un import JSON.
+function restoreArchive(buf) {
+  const entries = readZip(buf);
+  // content.json à la racine, ou dans un dossier si l'archive a été refaite à la main.
+  const contentEntry = entries
+    .filter((e) => e.name === 'content.json' || e.name.endsWith('/content.json'))
+    .sort((a, b) => a.name.length - b.name.length)[0];
+  if (!contentEntry) throw new ZipError("Pas de content.json dans l'archive.");
+  let content;
+  try {
+    content = JSON.parse(contentEntry.data.toString('utf8'));
+  } catch {
+    throw new ZipError("Le fichier content.json de l'archive est illisible.");
+  }
+  if (!content || typeof content !== 'object' || Array.isArray(content)) throw new ZipError('Fichier invalide');
+  const files = new Map();
+  for (const e of entries) {
+    const [dir, name] = e.name.split('/').slice(-2);
+    if (dir === 'uploads' && name) files.set(name, e.data);
+  }
+  const restored = [];
+  for (const name of uploadsIn(content)) {
+    const data = files.get(name);
+    if (!data) continue;
+    const type = uploadType(name);
+    if (!UPLOAD_NAME.test(name) || !type || !bufferMatchesType(data.subarray(0, 16), type)) {
+      throw new ZipError("Un fichier de l'archive n'est pas une image, un PDF ou une police valide.");
+    }
+    restored.push([name, data]);
+  }
+  // Tout est vérifié avant d'écrire quoi que ce soit.
+  for (const [name, data] of restored) fs.writeFileSync(path.join(UPLOAD_DIR, name), data);
+  return { content, restored: restored.length };
 }
 
 // ---------- Administration cachée ----------
@@ -404,6 +468,39 @@ admin.post('/api/upload', requireLogin, sameOrigin, requireAjax, (req, res) => {
     res.json({ url: `/uploads/${req.file.filename}` });
   });
 });
+
+// Le contenu vient de l'admin (modifications pas encore enregistrées comprises).
+admin.post('/api/backup', requireLogin, sameOrigin, requireAjax, express.json({ limit: '2mb' }), (req, res) => {
+  const content = req.body;
+  if (!content || typeof content !== 'object' || Array.isArray(content)) {
+    return res.status(400).json({ error: 'Fichier invalide' });
+  }
+  const day = new Date().toISOString().slice(0, 10);
+  res
+    .type('application/zip')
+    .set('Content-Disposition', `attachment; filename="folichon-${day}.zip"`)
+    .set('Cache-Control', 'no-store')
+    .send(backupArchive(content));
+});
+
+admin.post(
+  '/api/restore',
+  requireLogin,
+  sameOrigin,
+  requireAjax,
+  express.raw({ type: 'application/zip', limit: '200mb' }),
+  (req, res) => {
+    if (!Buffer.isBuffer(req.body) || !req.body.length) {
+      return res.status(400).json({ error: 'Envoie une archive .zip exportée depuis Folichon.' });
+    }
+    try {
+      res.json(restoreArchive(req.body));
+    } catch (err) {
+      if (!(err instanceof ZipError)) throw err;
+      res.status(400).json({ error: err.message });
+    }
+  }
+);
 
 app.use(ADMIN_PATH, admin);
 

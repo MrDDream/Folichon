@@ -1178,29 +1178,62 @@ window.addEventListener('beforeunload', (e) => {
   }
 });
 
-document.getElementById('export').addEventListener('click', () => {
-  const blob = new Blob([JSON.stringify(content, null, 2)], { type: 'application/json' });
-  const a = el('a', {
-    href: URL.createObjectURL(blob),
-    download: `contenu-${new Date().toISOString().slice(0, 10)}.json`
-  });
-  document.body.append(a);
-  a.click();
-  a.remove();
-  setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+// Export : une archive ZIP avec le contenu affiché (modifications pas encore enregistrées
+// comprises) et les images, PDF et polices qu'il utilise. Le serveur la prépare.
+document.getElementById('export').addEventListener('click', async () => {
+  const previous = lastStatus;
+  setStatus('Préparation de l’archive…');
+  try {
+    const res = await fetch(`${BASE}/api/backup`, {
+      method: 'POST',
+      credentials: 'same-origin',
+      headers: { 'X-Requested-With': 'folichon-admin', 'Content-Type': 'application/json' },
+      body: JSON.stringify(content)
+    });
+    if (!res.ok) {
+      const data = await res.json().catch(() => ({}));
+      throw new Error(data.error || t('Erreur {status}', { status: res.status }));
+    }
+    const name = /filename="([^"]+)"/.exec(res.headers.get('Content-Disposition') || '')?.[1] || 'folichon.zip';
+    const a = el('a', { href: URL.createObjectURL(await res.blob()), download: name });
+    document.body.append(a);
+    a.click();
+    a.remove();
+    setTimeout(() => URL.revokeObjectURL(a.href), 1000);
+    setStatus(...previous);
+  } catch (err) {
+    setStatus('Export impossible : {message}', 'error', { message: t(err.message) });
+  }
 });
 
+// Import : une archive exportée (contenu + fichiers) ou un simple fichier JSON.
+// Dans les deux cas, rien n'est enregistré avant « Enregistrer ».
 document.getElementById('import').addEventListener('change', async (e) => {
   const f = e.target.files[0];
   if (!f) return;
   try {
-    const data = JSON.parse(await f.text());
+    let data;
+    let restored = -1;
+    if (/\.zip$/i.test(f.name) || /zip/.test(f.type)) {
+      setStatus('Import de l’archive…');
+      ({ content: data, restored } = await api('/restore', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/zip' },
+        body: f
+      }));
+    } else {
+      data = JSON.parse(await f.text());
+    }
     if (!data || typeof data !== 'object' || Array.isArray(data)) throw new Error(t('Fichier invalide'));
     content = data;
     openItems.clear();
     render();
     markDirty();
-    setStatus('Fichier importé — vérifie puis enregistre', 'warn');
+    if (restored >= 0) {
+      setStatus('Archive importée, {count} fichier(s) restauré(s) — vérifie puis enregistre', 'warn', {
+        count: restored
+      });
+    } else setStatus('Fichier importé — vérifie puis enregistre', 'warn');
   } catch (err) {
     setStatus('Import impossible : {message}', 'error', { message: t(err.message) });
   }

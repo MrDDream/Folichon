@@ -137,7 +137,7 @@ To build the image yourself: clone the repository, `cp .env.example .env`, then 
 - **Appearance** (its own section in the admin menu): page language (French or English), accent colour, 7 themes that change the layout and style of the public page; light/dark mode and the accent colour stay yours. One font for headings, one for body text: a bundled one (Bricolage Grotesque, Inter, JetBrains Mono), a family already installed on devices (serif, rounded, handwritten…), or your own file (WOFF2, WOFF, TTF or OTF), served by your server. Check that its licence allows use on a website.
 - **Headline**: words between asterisks take the accent colour, for example `I build *Android apps*`.
 - **Save** (or Ctrl/Cmd + S): the public page updates at once; the previous version is kept in `data/content.backup.json`. If the content changed elsewhere (another tab), saving is refused instead of overwriting it.
-- **Export / Import**: back up or restore all content as one JSON file.
+- **Export / Import**: one ZIP archive with your content and the images, PDF and fonts it uses. Import it on another Folichon to move everything at once; the files are checked like any upload, and nothing changes until you click Save. A plain JSON file (content only) can still be imported.
 - An empty link, photo or e-mail hides the matching button. The e-mail address never appears in clear in the page.
 
 ## Security

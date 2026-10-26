@@ -24,7 +24,7 @@
         <div class="menu-list">
           <div class="menu-row show-sm"><%- include('partials/admin-controls', { cls: '' }) %></div>
           <a class="show-sm" href="/" target="_blank" rel="noopener" data-i18n>Voir le site ↗</a>
-          <button type="button" id="export" data-i18n>Exporter le contenu</button>
+          <button type="button" id="export" data-i18n>Exporter (contenu et images)</button>
           <label for="import" data-i18n>Importer un fichier…</label>
           <form method="post" action="<%= base %>/logout">
             <button type="submit" class="danger" data-i18n>Se déconnecter</button>
@@ -32,7 +32,7 @@
           <a class="version menu-version show-sm" data-version target="_blank" rel="noopener" hidden></a>
         </div>
       </details>
-      <input type="file" id="import" accept="application/json" hidden>
+      <input type="file" id="import" accept=".zip,.json,application/zip,application/json" hidden>
       <button type="button" class="btn btn-primary" id="save" disabled data-i18n data-i18n-title="Enregistrer (Ctrl + S)">Enregistrer</button>
     </div>
   </div>

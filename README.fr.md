@@ -137,7 +137,7 @@ Pour construire l'image toi-même : clone le dépôt, `cp .env.example .env`, pu
 - **Apparence** (sa propre section dans le menu de l'admin) : langue de la page (français ou anglais), couleur d'accent, 7 thèmes qui changent la mise en page et le style de la page publique ; le mode clair/sombre et la couleur d'accent restent les tiens. Une police pour les titres, une pour le texte : une fournie (Bricolage Grotesque, Inter, JetBrains Mono), une famille déjà installée sur les appareils (serif, arrondie, manuscrite…) ou ton propre fichier (WOFF2, WOFF, TTF ou OTF), servi par ton serveur. Vérifie que sa licence autorise l'usage sur un site.
 - **Accroche** : les mots entre astérisques prennent la couleur d'accent, par exemple `Je fabrique des *apps Android*`.
 - **Enregistrer** (ou Ctrl/Cmd + S) : la page publique est à jour immédiatement ; la version précédente est gardée dans `data/content.backup.json`. Si le contenu a changé ailleurs (autre onglet), l'enregistrement est refusé au lieu de l'écraser.
-- **Exporter / Importer** : sauvegarde ou restaure tout le contenu en un fichier JSON.
+- **Exporter / Importer** : une archive ZIP avec ton contenu et les images, PDF et polices qu'il utilise. Importe-la sur un autre Folichon pour tout déménager d'un coup ; les fichiers sont vérifiés comme n'importe quel envoi, et rien ne change avant « Enregistrer ». Un simple fichier JSON (contenu seul) s'importe toujours.
 - Un lien, une photo ou un e-mail laissé vide masque le bouton correspondant. L'adresse e-mail n'apparaît jamais en clair dans la page.
 
 ## Sécurité

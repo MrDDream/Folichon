@@ -5,6 +5,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { codeAt, counterAt } from '../src/totp.js';
+import { createZip, readZip } from '../src/zip.js';
 
 const PORT = 3999;
 const BASE = `http://127.0.0.1:${PORT}`;
@@ -348,6 +349,69 @@ test('page publique en anglais quand la langue du site est « en »', async () =
   assert.match(html, /View code ↗/);
   assert.match(html, /data-copied="Link copied ✓"/);
   assert.doesNotMatch(html, /Voir le code|Copier le lien|Partager la page/);
+});
+
+test('sauvegarde ZIP : export du contenu et de ses fichiers, puis réimport', async () => {
+  const ajax = { cookie, 'X-Requested-With': 'folichon-admin' };
+  const png = Buffer.from(
+    '89504e470d0a1a0a0000000d49484452000000010000000108060000001f15c4890000000d4944415478da63f8ffff3f0005fe02fea7d6a4f30000000049454e44ae426082',
+    'hex'
+  );
+  const fd = new FormData();
+  fd.append('file', new Blob([png], { type: 'image/png' }), 'photo.png');
+  const { url } = await (await fetch(`${BASE + ADMIN}/api/upload`, { method: 'POST', headers: ajax, body: fd })).json();
+  const content = await (await fetch(`${BASE + ADMIN}/api/content`, { headers: { cookie } })).json();
+  content.profile.photo = url;
+  content.profile.name = 'Pas encore enregistré';
+
+  const backup = (headers) =>
+    fetch(`${BASE + ADMIN}/api/backup`, {
+      method: 'POST',
+      headers: { ...headers, 'Content-Type': 'application/json' },
+      body: JSON.stringify(content)
+    });
+  assert.equal((await backup({ cookie })).status, 400);
+  const res = await backup(ajax);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('content-type'), 'application/zip');
+  assert.match(res.headers.get('content-disposition'), /attachment; filename="folichon-\d{4}-\d{2}-\d{2}\.zip"/);
+  const archive = Buffer.from(await res.arrayBuffer());
+  const entries = Object.fromEntries(readZip(archive).map((e) => [e.name, e.data]));
+  const name = url.replace('/uploads/', '');
+  // Le contenu et chaque fichier qu'il utilise (ici la photo, et la police du test précédent).
+  assert.ok(entries['content.json']);
+  assert.ok(Object.keys(entries).every((n) => n === 'content.json' || n.startsWith('uploads/')));
+  assert.equal(JSON.parse(entries['content.json']).profile.name, 'Pas encore enregistré');
+  assert.deepEqual(entries[`uploads/${name}`], png);
+
+  // Sur une autre installation, le fichier n'existe pas encore : l'import le recrée.
+  const file = path.join(dataDir, 'uploads', name);
+  fs.rmSync(file);
+  const restore = (body) =>
+    fetch(`${BASE + ADMIN}/api/restore`, {
+      method: 'POST',
+      headers: { ...ajax, 'Content-Type': 'application/zip' },
+      body
+    });
+  const ok = await restore(archive);
+  assert.equal(ok.status, 200);
+  const back = await ok.json();
+  assert.equal(back.restored, Object.keys(entries).length - 1);
+  assert.equal(back.content.profile.photo, url);
+  assert.deepEqual(fs.readFileSync(file), png);
+  // Rien n'est enregistré tant que l'admin ne clique pas sur « Enregistrer ».
+  assert.doesNotMatch(await (await fetch(BASE)).text(), /Pas encore enregistré/);
+
+  // Un faux fichier dans l'archive (texte nommé .png) est refusé, et rien n'est écrit.
+  const fake = createZip([
+    { name: 'content.json', data: Buffer.from(JSON.stringify({ profile: { photo: '/uploads/faux.png' } })) },
+    { name: 'uploads/faux.png', data: Buffer.from('ceci nest pas une image') }
+  ]);
+  const refused = await restore(fake);
+  assert.equal(refused.status, 400);
+  assert.match((await refused.json()).error, /pas une image/);
+  assert.equal(fs.existsSync(path.join(dataDir, 'uploads', 'faux.png')), false);
+  assert.equal((await restore(Buffer.from('pas une archive'))).status, 400);
 });
 
 test('la déconnexion révoque la session côté serveur', async () => {

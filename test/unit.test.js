@@ -8,6 +8,8 @@ import { createAuth } from '../src/auth.js';
 import { createImageSizer } from '../src/images.js';
 import { createStore } from '../src/store.js';
 import { isNewer, releaseUrl } from '../src/version.js';
+import zlib from 'node:zlib';
+import { createZip, crc32, readZip, ZipError } from '../src/zip.js';
 
 test('siteTheme : seuls les thèmes connus passent, sinon le thème par défaut', () => {
   for (const name of h.siteThemes) assert.equal(h.siteTheme(name), name);
@@ -169,4 +171,34 @@ test('versions : le lien de la note de version reste sur le dépôt Folichon', (
   ]) {
     assert.equal(releaseUrl(bad), 'https://github.com/MrDDream/Folichon/releases');
   }
+});
+
+test('zip : aller-retour, fichiers compressés (deflate) et archives abîmées', () => {
+  const files = [
+    { name: 'content.json', data: Buffer.from('{"a":"é"}') },
+    { name: 'uploads/photo.png', data: Buffer.from([0x89, 0x50, 0x4e, 0x47, 1, 2, 3]) }
+  ];
+  const zip = createZip(files);
+  assert.deepEqual(readZip(zip), files);
+  assert.equal(crc32(Buffer.from('123456789')), 0xcbf43926);
+
+  // Même archive, mais le premier fichier compressé comme le font les outils du système.
+  const text = Buffer.from('bonjour '.repeat(50));
+  const packed = zlib.deflateRawSync(text);
+  const deflated = createZip([{ name: 'a.txt', data: packed }]);
+  deflated.writeUInt16LE(8, 8); // méthode, en-tête local
+  deflated.writeUInt32LE(crc32(text), 14);
+  deflated.writeUInt32LE(text.length, 22);
+  const central = deflated.indexOf(Buffer.from([0x50, 0x4b, 0x01, 0x02]));
+  deflated.writeUInt16LE(8, central + 10);
+  deflated.writeUInt32LE(crc32(text), central + 16);
+  deflated.writeUInt32LE(text.length, central + 24);
+  assert.deepEqual(readZip(deflated), [{ name: 'a.txt', data: text }]);
+  assert.throws(() => readZip(deflated, { maxEntrySize: 100 }), ZipError);
+
+  const broken = Buffer.from(zip);
+  broken[44] ^= 0xff; // un octet du contenu change : le CRC ne correspond plus
+  assert.throws(() => readZip(broken), ZipError);
+  assert.throws(() => readZip(Buffer.from('pas une archive')), ZipError);
+  assert.throws(() => readZip(Buffer.alloc(0)), ZipError);
 });
