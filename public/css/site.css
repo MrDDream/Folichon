@@ -648,7 +648,7 @@ footer.site-footer p { margin: 0; }
 :root[data-style="cv"] .hero h1 { font-size: clamp(36px, 6vw, 52px); font-weight: 700; letter-spacing: -0.03em; line-height: 1; }
 :root[data-style="cv"] .hero-headline { font-family: var(--f-body); font-weight: 400; font-style: italic; font-size: 21px; }
 :root[data-style="cv"] .hl { color: inherit; text-decoration: underline; text-decoration-color: var(--accent); text-decoration-thickness: 2px; text-underline-offset: 3px; }
-:root[data-style="cv"] .btn { min-height: 40px; padding: 0 14px; font: 600 14px/1 'Inter', system-ui, sans-serif; border: 1px solid var(--c-ink); }
+:root[data-style="cv"] .btn { min-height: 40px; padding: 0 14px; font: 600 14px/1 var(--f-display); border: 1px solid var(--c-ink); }
 :root[data-style="cv"] .btn-primary { background: var(--c-ink); color: var(--c-page); border-color: var(--c-ink); }
 :root[data-style="cv"] .btn-social { background: transparent !important; color: var(--c-ink); }
 :root[data-style="cv"] .socials { padding-top: 0; border-top: 0; }
@@ -678,14 +678,14 @@ footer.site-footer p { margin: 0; }
 :root[data-style="cv"] .card { gap: 16px; padding-bottom: 32px; }
 :root[data-style="cv"] .card + .card { padding-top: 8px; }
 :root[data-style="cv"] .card .section-head { border-bottom: 1px solid var(--c-ink); padding-bottom: 8px !important; }
-:root[data-style="cv"] :is(.skill-group p, .languages p:first-child, .card-dark .kicker) { color: var(--c-muted); font-family: 'Inter', system-ui, sans-serif; }
+:root[data-style="cv"] :is(.skill-group p, .languages p:first-child, .card-dark .kicker) { color: var(--c-muted); font-family: var(--f-display); }
 :root[data-style="cv"] .skills-list { gap: 0; }
 :root[data-style="cv"] .skill { background: transparent !important; color: var(--c-ink) !important; padding: 0; font-weight: 400; }
 :root[data-style="cv"] .skill + .skill::before { content: ' · '; color: var(--c-muted); white-space: pre; }
 :root[data-style="cv"] .languages { border-top: 0; padding-top: 0; }
 :root[data-style="cv"] .timeline { padding-left: 0; border-left: 0; gap: 20px; }
 :root[data-style="cv"] .timeline .dot { display: none; }
-:root[data-style="cv"] .t-title { font-size: 19px; font-family: 'Inter', system-ui, sans-serif; }
+:root[data-style="cv"] .t-title { font-size: 19px; }
 :root[data-style="cv"] .contact { margin-top: 0; gap: 16px; padding-top: 8px; }
 :root[data-style="cv"] .contact > .kicker { border-bottom: 1px solid var(--c-ink); padding-bottom: 8px; }
 :root[data-style="cv"] .contact h2 { text-transform: none; font-size: 24px; }

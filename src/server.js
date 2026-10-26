@@ -163,8 +163,20 @@ const UPLOAD_TYPES = {
   'image/webp': { ext: '.webp', looksRight: (b) => ascii(b, 0, 4) === 'RIFF' && ascii(b, 8, 12) === 'WEBP' },
   'image/gif': { ext: '.gif', looksRight: (b) => ascii(b, 0, 4) === 'GIF8' },
   'image/avif': { ext: '.avif', looksRight: (b) => ascii(b, 4, 8) === 'ftyp' && /^avi[fs]$/.test(ascii(b, 8, 12)) },
-  'application/pdf': { ext: '.pdf', looksRight: (b) => ascii(b, 0, 5) === '%PDF-' }
+  'application/pdf': { ext: '.pdf', looksRight: (b) => ascii(b, 0, 5) === '%PDF-' },
+  'font/woff2': { ext: '.woff2', looksRight: (b) => ascii(b, 0, 4) === 'wOF2' },
+  'font/woff': { ext: '.woff', looksRight: (b) => ascii(b, 0, 4) === 'wOFF' },
+  'font/ttf': { ext: '.ttf', looksRight: (b) => b.readUInt32BE(0) === 0x00010000 || ascii(b, 0, 4) === 'true' },
+  'font/otf': { ext: '.otf', looksRight: (b) => ascii(b, 0, 4) === 'OTTO' }
 };
+// Les navigateurs annoncent rarement le bon type pour une police : on se fie alors à
+// l'extension, puis le contenu est vérifié comme pour les autres fichiers.
+const FONT_EXTENSIONS = { '.woff2': 'font/woff2', '.woff': 'font/woff', '.ttf': 'font/ttf', '.otf': 'font/otf' };
+function normalizeType(file) {
+  if (Object.hasOwn(UPLOAD_TYPES, file.mimetype)) return;
+  const ext = path.extname(file.originalname || '').toLowerCase();
+  if (Object.hasOwn(FONT_EXTENSIONS, ext)) file.mimetype = FONT_EXTENSIONS[ext];
+}
 
 function fileMatchesType(file, mimetype) {
   const head = Buffer.alloc(16);
@@ -184,7 +196,10 @@ const upload = multer({
       cb(null, `${Date.now().toString(36)}-${crypto.randomBytes(6).toString('hex')}${UPLOAD_TYPES[file.mimetype].ext}`)
   }),
   limits: { fileSize: 15 * 1024 * 1024, files: 1 },
-  fileFilter: (req, file, cb) => cb(null, Object.hasOwn(UPLOAD_TYPES, file.mimetype))
+  fileFilter: (req, file, cb) => {
+    normalizeType(file);
+    cb(null, Object.hasOwn(UPLOAD_TYPES, file.mimetype));
+  }
 });
 
 // Supprime les envois qui ne servent plus (ni dans le contenu, ni dans sa sauvegarde),
@@ -282,7 +297,12 @@ async function renderLogin(req, res, error = '', status = 200) {
 
 admin.get('/', (req, res) => {
   if (!auth.isLoggedIn(req)) return renderLogin(req, res);
-  res.render('admin', { base: ADMIN_PATH, socialTypes: helpers.socialTypes, iconNames: helpers.iconNames });
+  res.render('admin', {
+    base: ADMIN_PATH,
+    socialTypes: helpers.socialTypes,
+    iconNames: helpers.iconNames,
+    fontPresets: helpers.fontPresets
+  });
 });
 
 admin.post('/login', sameOrigin, readForm, (req, res) => {
@@ -358,7 +378,10 @@ admin.post('/api/upload', requireLogin, sameOrigin, requireAjax, (req, res) => {
         .status(400)
         .json({ error: err.code === 'LIMIT_FILE_SIZE' ? 'Fichier trop lourd (15 Mo max).' : err.message });
     }
-    if (!req.file) return res.status(400).json({ error: 'Formats acceptés : PNG, JPG, WebP, GIF, AVIF ou PDF.' });
+    if (!req.file)
+      return res
+        .status(400)
+        .json({ error: 'Formats acceptés : PNG, JPG, WebP, GIF, AVIF, PDF ou police (WOFF2, WOFF, TTF, OTF).' });
     if (!fileMatchesType(req.file.path, req.file.mimetype)) {
       fs.rmSync(req.file.path, { force: true });
       return res

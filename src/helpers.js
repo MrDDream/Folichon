@@ -15,6 +15,70 @@ export function siteTheme(value) {
   return siteThemes.includes(value) ? value : siteThemes[0];
 }
 
+// Polices proposées dans l'administration (titres et texte). Les trois premières sont
+// fournies avec Folichon ; les autres sont des polices déjà installées sur l'appareil du
+// visiteur (le rendu peut donc varier un peu). « custom » = un fichier envoyé depuis l'admin.
+export const fontPresets = [
+  { id: 'bricolage', name: 'Bricolage Grotesque', stack: "'Bricolage Grotesque', 'Inter', sans-serif" },
+  { id: 'inter', name: 'Inter', stack: "'Inter', system-ui, sans-serif" },
+  { id: 'mono', name: 'JetBrains Mono', stack: "'JetBrains Mono', ui-monospace, monospace" },
+  { id: 'system', name: 'Police du système', stack: "system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif" },
+  { id: 'humanist', name: 'Humaniste', stack: "Seravek, 'Gill Sans Nova', Ubuntu, Calibri, 'DejaVu Sans', sans-serif" },
+  { id: 'geometric', name: 'Géométrique', stack: "Avenir, Montserrat, Corbel, 'URW Gothic', sans-serif" },
+  {
+    id: 'rounded',
+    name: 'Arrondie',
+    stack:
+      "ui-rounded, 'Hiragino Maru Gothic ProN', Quicksand, Comfortaa, Manjari, 'Arial Rounded MT', 'Arial Rounded MT Bold', Calibri, sans-serif"
+  },
+  {
+    id: 'serif',
+    name: 'Serif classique',
+    stack: "'Iowan Old Style', 'Palatino Linotype', Palatino, 'Book Antiqua', Georgia, serif"
+  },
+  {
+    id: 'charter',
+    name: 'Serif de lecture',
+    stack: "Charter, 'Bitstream Charter', 'Sitka Text', Cambria, Georgia, serif"
+  },
+  {
+    id: 'didone',
+    name: 'Didone (mode)',
+    stack: "Didot, 'Bodoni MT', 'Noto Serif Display', 'URW Palladio L', P052, Sylfaen, serif"
+  },
+  { id: 'slab', name: 'Slab', stack: "Rockwell, 'Rockwell Nova', 'Roboto Slab', 'DejaVu Serif', 'Sitka Small', serif" },
+  { id: 'hand', name: 'Manuscrite', stack: "'Segoe Print', 'Bradley Hand', Chilanka, 'Comic Neue', casual, cursive" }
+];
+
+const FONT_FILE = /^\/uploads\/[A-Za-z0-9_-]+\.(woff2|woff|ttf|otf)$/;
+const FONT_FORMATS = { woff2: 'woff2', woff: 'woff', ttf: 'truetype', otf: 'opentype' };
+
+// CSS des polices choisies dans l'admin : remplace celles du thème. Vide = police du thème.
+// Seules des valeurs connues sortent d'ici (liste ci-dessus, fichier /uploads/ vérifié).
+export function fontCss(site = {}) {
+  const rules = [];
+  const vars = [];
+  for (const [role, key, family, fallback] of [
+    ['display', 'fontDisplay', 'Folichon Titres', 'sans-serif'],
+    ['body', 'fontBody', 'Folichon Texte', 'system-ui, sans-serif']
+  ]) {
+    const choice = site?.[key];
+    const file = site?.[`${key}File`];
+    if (choice === 'custom' && typeof file === 'string' && FONT_FILE.test(file)) {
+      const format = FONT_FORMATS[file.split('.').pop()];
+      rules.push(
+        `@font-face{font-family:'${family}';src:url('${file}') format('${format}');font-weight:100 900;font-display:swap}`
+      );
+      vars.push(`--f-${role}:'${family}',${fallback}`);
+    } else {
+      const preset = fontPresets.find((f) => f.id === choice);
+      if (preset) vars.push(`--f-${role}:${preset.stack}`);
+    }
+  }
+  if (vars.length) rules.push(`html:root[data-style]{${vars.join(';')}}`);
+  return rules.join('\n');
+}
+
 // N'autorise que les liens sûrs : http(s), mailto, tel, ancres et chemins locaux.
 export function safeUrl(value) {
   if (typeof value !== 'string') return '';

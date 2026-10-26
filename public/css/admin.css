@@ -1,5 +1,6 @@
 /* Administration et connexion — thème clair / sombre selon le système */
-/* Polices des vignettes de thème (chargées seulement si elles sont affichées) */
+/* Polices des vignettes de thème et des aperçus (chargées seulement si elles sont affichées) */
+@font-face { font-family: 'Inter'; font-style: normal; font-display: swap; font-weight: 100 900; src: url('../fonts/inter-latin.woff2') format('woff2-variations'); }
 @font-face { font-family: 'Bricolage Grotesque'; font-style: normal; font-display: swap; font-weight: 200 800; src: url('../fonts/bricolage-grotesque-latin.woff2') format('woff2-variations'); }
 @font-face { font-family: 'JetBrains Mono'; font-style: normal; font-display: swap; font-weight: 100 800; src: url('../fonts/jetbrains-mono-latin.woff2') format('woff2-variations'); }
 :root {
@@ -210,6 +211,8 @@ fieldset fieldset { background: var(--card-2); padding: 16px; }
 .tp-cv .tp-btn { display: none; }
 .tp-cv .tp-row { display: flex; flex-direction: column; gap: 3px; }
 .tp-cv .tp-row span, .tp-cv .tp-row span:last-child { height: 2px; background: #111111; opacity: .25; border-radius: 0; }
+.font-sample { margin: 2px 0 0; padding: 12px 14px; border: 1px dashed var(--line-strong); border-radius: 10px; background: var(--card-2); font-size: 22px; line-height: 1.25; overflow-wrap: anywhere; }
+.font-field .image-field { margin-top: 4px; }
 .theme-name { padding: 0 4px; font-weight: 700; font-size: 14px; }
 .theme-desc { padding: 0 4px; color: var(--muted); font-size: 12px; line-height: 1.35; }
 input[type="text"], input[type="password"], textarea, select { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--field); color: var(--ink); font: inherit; transition: border-color .15s, box-shadow .15s; }

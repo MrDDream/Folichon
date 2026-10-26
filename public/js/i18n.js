@@ -52,7 +52,8 @@ const EN = {
   'Le contenu a été modifié ailleurs depuis le chargement de cette page.':
     'The content was changed elsewhere since this page was loaded.',
   'Fichier trop lourd (15 Mo max).': 'File too large (15 MB max).',
-  'Formats acceptés : PNG, JPG, WebP, GIF, AVIF ou PDF.': 'Accepted formats: PNG, JPG, WebP, GIF, AVIF or PDF.',
+  'Formats acceptés : PNG, JPG, WebP, GIF, AVIF, PDF ou police (WOFF2, WOFF, TTF, OTF).':
+    'Accepted formats: PNG, JPG, WebP, GIF, AVIF, PDF or font (WOFF2, WOFF, TTF, OTF).',
   'Le contenu du fichier ne correspond pas à son type (fichier abîmé ou renommé ?).':
     'The file content does not match its type (damaged or renamed file?).',
 
@@ -115,6 +116,28 @@ const EN = {
   'Description (moteurs de recherche, partages)': 'Description (search engines, sharing)',
   'Couleur d’accent principale': 'Main accent colour',
   'Thème de la page': 'Page theme',
+  Polices: 'Fonts',
+  'Police des titres': 'Heading font',
+  'Police du texte': 'Body font',
+  'Celle du thème': 'The theme’s font',
+  'Ma police (fichier envoyé)': 'My own font (uploaded file)',
+  'Police du système': 'System font',
+  Humaniste: 'Humanist',
+  Géométrique: 'Geometric',
+  Arrondie: 'Rounded',
+  'Serif classique': 'Classic serif',
+  'Serif de lecture': 'Reading serif',
+  'Didone (mode)': 'Didone (fashion)',
+  Manuscrite: 'Handwritten',
+  'Fournies avec Folichon': 'Bundled with Folichon',
+  'Déjà installées sur l’appareil du visiteur': 'Already installed on the visitor’s device',
+  'Fichier de la police': 'Font file',
+  'WOFF2 de préférence (le plus léger). Vérifie que la licence de la police autorise son usage sur un site.':
+    'WOFF2 preferred (the lightest). Check that the font’s licence allows use on a website.',
+  'Les polices « déjà installées » changent un peu d’un appareil à l’autre. Pour un rendu identique partout, envoie ta propre police.':
+    '“Already installed” fonts vary a little from one device to another. For the same look everywhere, upload your own font.',
+  'Portez ce vieux whisky au juge blond qui fume': 'The quick brown fox jumps over the lazy dog',
+  'Choisis d’abord un fichier de police.': 'Pick a font file first.',
   'Change la mise en page et le style de la page publique. Le mode clair / sombre et la couleur d’accent sont conservés.':
     'Changes the layout and style of the public page. Light / dark mode and the accent colour are kept.',
   'Le thème d’origine : blocs arrondis et colorés, titres expressifs.':

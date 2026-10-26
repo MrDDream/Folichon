@@ -8,6 +8,7 @@ const body = document.body;
 const BASE = body.dataset.base;
 const SOCIAL_TYPES = body.dataset.socialTypes.split(',');
 const ICONS = body.dataset.iconNames.split(',');
+const FONT_PRESETS = JSON.parse(body.dataset.fontPresets || '[]');
 const $status = document.getElementById('status');
 const $save = document.getElementById('save');
 const $editor = document.getElementById('editor');
@@ -24,6 +25,7 @@ const lines = (label, o = {}) => ({ kind: 'lines', label, ...o });
 const group = (label, fields, o = {}) => ({ kind: 'group', label, fields, ...o });
 const list = (label, item, o = {}) => ({ kind: 'list', label, item, ...o });
 const themes = (label, o = {}) => ({ kind: 'themes', label, ...o });
+const font = (label, o = {}) => ({ kind: 'font', label, ...o });
 
 // Thèmes de la page publique (même liste que siteThemes dans src/helpers.js).
 // Les vignettes de l'admin sont dessinées en CSS (.tp-<id> dans admin.css).
@@ -79,6 +81,23 @@ const SECTIONS = [
             themes('Thème de la page', {
               help: 'Change la mise en page et le style de la page publique. Le mode clair / sombre et la couleur d’accent sont conservés.'
             })
+          ],
+          [
+            '',
+            group(
+              'Polices',
+              [
+                ['fontDisplay', font('Police des titres', { sample: 'Prénom Nom', weight: 800 })],
+                [
+                  'fontBody',
+                  font('Police du texte', { sample: 'Portez ce vieux whisky au juge blond qui fume', weight: 400 })
+                ]
+              ],
+              {
+                inline: true,
+                help: 'Les polices « déjà installées » changent un peu d’un appareil à l’autre. Pour un rendu identique partout, envoie ta propre police.'
+              }
+            )
           ]
         ])
       ],
@@ -593,10 +612,12 @@ function renderNode(sch, parent, key, path) {
   const value = parent[key];
   switch (sch.kind) {
     case 'group': {
-      if (!value || typeof value !== 'object') parent[key] = {};
-      const obj = parent[key];
+      // inline : les champs du groupe sont rangés directement dans l'objet parent.
+      if (!sch.inline && (!value || typeof value !== 'object')) parent[key] = {};
+      const obj = sch.inline ? parent : parent[key];
       const inner = sch.fields.map(([k, s]) => renderNode(s, obj, k, `${path}.${k}`));
       const box = el('div', { class: sch.grid ? 'grid' : 'stack' }, inner);
+      if (sch.help) box.prepend(el('small', { class: 'help' }, t(sch.help)));
       return sch.label ? el('fieldset', {}, el('legend', {}, t(sch.label)), box) : box;
     }
     case 'list':
@@ -669,6 +690,8 @@ function renderNode(sch, parent, key, path) {
       return renderImage(sch, parent, key);
     case 'themes':
       return renderThemes(sch, parent, key);
+    case 'font':
+      return renderFont(sch, parent, key);
     default:
       return el('p', {}, t('Champ inconnu : {kind}', { kind: sch.kind }));
   }
@@ -750,6 +773,78 @@ function renderThemes(sch, parent, key) {
   );
 }
 
+// Police : liste des polices proposées, aperçu, et envoi d'un fichier pour « Ma police ».
+// La police envoyée est chargée dans la page de l'admin pour que l'aperçu soit exact.
+const loadedFonts = new Map();
+function previewFamily(url) {
+  if (!/^\/uploads\/[A-Za-z0-9_-]+\.(woff2|woff|ttf|otf)$/.test(url)) return '';
+  if (!loadedFonts.has(url)) {
+    const family = `folichon-preview-${loadedFonts.size + 1}`;
+    loadedFonts.set(url, family);
+    const face = new FontFace(family, `url(${url})`);
+    face.load().then(
+      (f) => document.fonts.add(f),
+      () => {}
+    );
+  }
+  return `'${loadedFonts.get(url)}'`;
+}
+
+function renderFont(sch, parent, key) {
+  const fileKey = `${key}File`;
+  const value = parent[key] === 'custom' || FONT_PRESETS.some((f) => f.id === parent[key]) ? parent[key] : '';
+  const bundled = FONT_PRESETS.slice(0, 3);
+  const system = FONT_PRESETS.slice(3);
+  const option = (v, label) => el('option', { value: v, selected: v === value }, t(label));
+  const select = el(
+    'select',
+    {},
+    option('', 'Celle du thème'),
+    el(
+      'optgroup',
+      { label: t('Fournies avec Folichon') },
+      bundled.map((f) => option(f.id, f.name))
+    ),
+    el(
+      'optgroup',
+      { label: t('Déjà installées sur l’appareil du visiteur') },
+      system.map((f) => option(f.id, f.name))
+    ),
+    option('custom', 'Ma police (fichier envoyé)')
+  );
+  const sample = el('p', { class: 'font-sample', style: `font-weight: ${sch.weight}` }, t(sch.sample));
+  const upload = renderImage(
+    {
+      kind: 'image',
+      label: 'Fichier de la police',
+      file: true,
+      accept: '.woff2,.woff,.ttf,.otf',
+      help: 'WOFF2 de préférence (le plus léger). Vérifie que la licence de la police autorise son usage sur un site.',
+      onChange: () => update()
+    },
+    parent,
+    fileKey
+  );
+  function update() {
+    const choice = select.value;
+    upload.hidden = choice !== 'custom';
+    let family = 'inherit';
+    if (choice === 'custom') family = previewFamily(parent[fileKey] || '') || 'inherit';
+    else if (choice) family = FONT_PRESETS.find((f) => f.id === choice).stack;
+    sample.style.fontFamily = family;
+    sample.hidden = !choice || (choice === 'custom' && family === 'inherit');
+  }
+  select.addEventListener('change', () => {
+    if (select.value) parent[key] = select.value;
+    else delete parent[key];
+    update();
+    markDirty();
+  });
+  update();
+  const fid = (select.id = id());
+  return el('div', { class: 'field font-field' }, el('label', { for: fid }, t(sch.label)), select, sample, upload);
+}
+
 function renderImage(sch, parent, key) {
   const value = parent[key] ?? '';
   const isFile = sch.file;
@@ -761,6 +856,7 @@ function renderImage(sch, parent, key) {
   });
   input.addEventListener('input', () => {
     parent[key] = input.value.trim();
+    sch.onChange?.(parent[key]);
     if (preview) {
       preview.src = parent[key];
       preview.hidden = !parent[key];
@@ -779,6 +875,7 @@ function renderImage(sch, parent, key) {
       const { url } = await api('/upload', { method: 'POST', body: fd });
       parent[key] = url;
       input.value = url;
+      sch.onChange?.(url);
       if (preview) {
         preview.src = url;
         preview.hidden = false;
@@ -798,6 +895,7 @@ function renderImage(sch, parent, key) {
       onclick: () => {
         parent[key] = '';
         input.value = '';
+        sch.onChange?.('');
         if (preview) preview.hidden = true;
         markDirty();
       }

@@ -197,6 +197,41 @@ test("l'envoi d'image fonctionne et refuse le SVG", async () => {
   assert.equal(bad.status, 400);
 });
 
+test("police envoyée : acceptée d'après son contenu, puis utilisée par la page", async () => {
+  const send = async (bytes, name, type = 'application/octet-stream') => {
+    const fd = new FormData();
+    fd.append('file', new Blob([bytes], { type }), name);
+    return fetch(`${BASE + ADMIN}/api/upload`, {
+      method: 'POST',
+      headers: { cookie, 'X-Requested-With': 'folichon-admin' },
+      body: fd
+    });
+  };
+  // Les navigateurs envoient souvent les polices sans type précis : l'extension et le contenu suffisent.
+  const woff2 = Buffer.concat([Buffer.from('wOF2', 'latin1'), Buffer.alloc(60)]);
+  const ok = await send(woff2, 'MaPolice.woff2');
+  assert.equal(ok.status, 200);
+  const { url } = await ok.json();
+  assert.match(url, /^\/uploads\/[a-z0-9-]+\.woff2$/);
+
+  // Un faux fichier nommé .ttf est refusé.
+  assert.equal((await send(Buffer.from('<html>pas une police</html>'), 'x.ttf')).status, 400);
+
+  const content = await (await fetch(`${BASE + ADMIN}/api/content`, { headers: { cookie } })).json();
+  content.site.fontDisplay = 'custom';
+  content.site.fontDisplayFile = url;
+  content.site.fontBody = 'serif';
+  const saved = await fetch(`${BASE + ADMIN}/api/content`, {
+    method: 'PUT',
+    headers: { cookie, 'Content-Type': 'application/json', 'X-Requested-With': 'folichon-admin' },
+    body: JSON.stringify(content)
+  });
+  assert.equal(saved.status, 200);
+  const html = await (await fetch(BASE)).text();
+  assert.ok(html.includes(`src:url('${url}') format('woff2')`));
+  assert.match(html, /--f-body:'Iowan Old Style'/);
+});
+
 test('un faux fichier (texte annoncé comme PNG) est refusé', async () => {
   const fake = new FormData();
   fake.append('file', new Blob(['<html><script>alert(1)</script></html>'], { type: 'image/png' }), 'x.png');

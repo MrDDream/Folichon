@@ -14,6 +14,26 @@ test('siteTheme : seuls les thèmes connus passent, sinon le thème par défaut'
   for (const bad of [undefined, '', 'inconnu', '" onload="x', 42, null]) assert.equal(h.siteTheme(bad), 'folichon');
 });
 
+test('fontCss : polices de la liste ou fichier envoyé, rien d’autre', () => {
+  assert.equal(h.fontCss({}), '');
+  assert.equal(h.fontCss({ fontDisplay: 'inconnue' }), '');
+  assert.match(h.fontCss({ fontDisplay: 'mono' }), /--f-display:'JetBrains Mono'/);
+  const custom = h.fontCss({ fontBody: 'custom', fontBodyFile: '/uploads/abc-123.woff2' });
+  assert.match(
+    custom,
+    /@font-face\{font-family:'Folichon Texte';src:url\('\/uploads\/abc-123\.woff2'\) format\('woff2'\)/
+  );
+  assert.match(custom, /--f-body:'Folichon Texte'/);
+  for (const bad of [
+    "/uploads/x.woff2');}body{display:none",
+    'https://evil.example/x.woff2',
+    '/uploads/../x.ttf',
+    '/uploads/x.svg'
+  ]) {
+    assert.equal(h.fontCss({ fontBody: 'custom', fontBodyFile: bad }), '');
+  }
+});
+
 test('safeUrl : seuls les liens sûrs passent', () => {
   for (const ok of [
     'https://a.fr',
