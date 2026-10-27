@@ -414,6 +414,20 @@ test('sauvegarde ZIP : export du contenu et de ses fichiers, puis réimport', as
   assert.equal((await restore(Buffer.from('pas une archive'))).status, 400);
 });
 
+test("image d'aperçu des partages : une carte PNG 1200 × 630 d'après le haut de la page", async () => {
+  const html = await (await fetch(BASE)).text();
+  const url = html.match(/<meta property="og:image" content="([^"]+)">/)?.[1];
+  assert.match(url, /^http:\/\/127\.0\.0\.1:3999\/share-card\.png\?v=[a-f0-9]+$/);
+  assert.match(html, /<meta property="og:image:width" content="1200">/);
+  assert.match(html, /<meta name="twitter:card" content="summary_large_image">/);
+  const res = await fetch(url);
+  assert.equal(res.status, 200);
+  assert.equal(res.headers.get('content-type'), 'image/png');
+  const png = Buffer.from(await res.arrayBuffer());
+  assert.equal(png.readUInt32BE(0), 0x89504e47);
+  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
+});
+
 test('la déconnexion révoque la session côté serveur', async () => {
   const before = await fetch(`${BASE + ADMIN}/api/content`, { headers: { cookie } });
   assert.equal(before.status, 200);

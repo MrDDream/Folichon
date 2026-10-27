@@ -9,7 +9,6 @@
   const description = c.site?.description || p.intro || '';
   // Les aperçus de partage (WhatsApp, LinkedIn…) exigent des adresses complètes.
   const absolute = (url) => { try { return new URL(url, pageUrl).href; } catch { return ''; } };
-  const shareImage = photo ? absolute(photo) : '';
   const share = h.shareLinks(pageUrl, title, description);
   // width/height lus dans le fichier : la place de l'image est réservée avant son chargement.
   const dims = (src) => { const size = imageSize(src); return size ? ` width="${size.width}" height="${size.height}"` : ''; };
@@ -27,8 +26,12 @@
 <meta property="og:url" content="<%= pageUrl %>">
 <meta property="og:title" content="<%= title %>">
 <meta property="og:description" content="<%= description %>">
-<% if (shareImage) { %><meta property="og:image" content="<%= shareImage %>"><% } %>
-<meta name="twitter:card" content="<%= shareImage ? 'summary_large_image' : 'summary' %>">
+<meta property="og:image" content="<%= absolute(shareCard.url) %>">
+<meta property="og:image:type" content="image/png">
+<meta property="og:image:width" content="<%= shareCard.width %>">
+<meta property="og:image:height" content="<%= shareCard.height %>">
+<meta property="og:image:alt" content="<%= p.name || title %>">
+<meta name="twitter:card" content="summary_large_image">
 <link rel="preload" href="/assets/fonts/bricolage-grotesque-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="preload" href="/assets/fonts/inter-latin.woff2" as="font" type="font/woff2" crossorigin>
 <link rel="stylesheet" href="/assets/css/site.css?v=<%= assetVersion %>">

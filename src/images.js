@@ -52,23 +52,29 @@ function readSize(buf) {
   return null;
 }
 
+// Fichier local d'une adresse du site (/assets/…, /uploads/…), ou null.
 // roots : { '/assets/': dossier public, '/uploads/': dossier des envois }
+export function localFile(roots, url) {
+  if (typeof url !== 'string') return null;
+  const prefix = Object.keys(roots).find((p) => url.startsWith(p));
+  if (!prefix) return null;
+  const root = path.resolve(roots[prefix]);
+  let rel;
+  try {
+    rel = decodeURIComponent(url.slice(prefix.length).split(/[?#]/)[0]);
+  } catch {
+    return null;
+  }
+  const file = path.resolve(root, rel);
+  return file.startsWith(root + path.sep) ? file : null; // pas de sortie du dossier (../)
+}
+
 export function createImageSizer(roots) {
   const cache = new Map(); // fichier → { mtimeMs, size }
 
   return function imageSize(url) {
-    if (typeof url !== 'string') return null;
-    const prefix = Object.keys(roots).find((p) => url.startsWith(p));
-    if (!prefix) return null;
-    const root = path.resolve(roots[prefix]);
-    let rel;
-    try {
-      rel = decodeURIComponent(url.slice(prefix.length).split(/[?#]/)[0]);
-    } catch {
-      return null;
-    }
-    const file = path.resolve(root, rel);
-    if (!file.startsWith(root + path.sep)) return null; // pas de sortie du dossier (../)
+    const file = localFile(roots, url);
+    if (!file) return null;
     try {
       const { mtimeMs } = fs.statSync(file);
       const hit = cache.get(file);

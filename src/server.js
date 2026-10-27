@@ -8,7 +8,8 @@ import multer from 'multer';
 import QRCode from 'qrcode';
 import { ConflictError, createStore } from './store.js';
 import { createAuth } from './auth.js';
-import { createImageSizer } from './images.js';
+import { createImageSizer, localFile } from './images.js';
+import { CARD_HEIGHT, CARD_WIDTH, photoData, renderCard } from './share-card.js';
 import * as totp from './totp.js';
 import { updateInfo } from './version.js';
 import { createZip, readZip, ZipError } from './zip.js';
@@ -97,7 +98,8 @@ const auth = createAuth({
   cookiePath: ADMIN_PATH,
   sessionVersion: () => totpSecret
 });
-const imageSize = createImageSizer({ '/assets/': PUBLIC_DIR, '/uploads/': UPLOAD_DIR });
+const IMAGE_ROOTS = { '/assets/': PUBLIC_DIR, '/uploads/': UPLOAD_DIR };
+const imageSize = createImageSizer(IMAGE_ROOTS);
 
 // ---------- Application ----------
 const app = express();
@@ -135,13 +137,46 @@ app.use(compression());
 app.use('/assets', express.static(PUBLIC_DIR, { maxAge: '7d' }));
 app.use('/uploads', express.static(UPLOAD_DIR, { maxAge: '30d' }));
 
+const siteUrl = (req) => SITE_URL || `${req.protocol}://${req.get('host')}`;
+
 app.get('/', (req, res) => {
   res.render('index', {
     c: store.read(),
     h: helpers,
     imageSize,
-    pageUrl: `${SITE_URL || `${req.protocol}://${req.get('host')}`}/`
+    pageUrl: `${siteUrl(req)}/`,
+    // La révision dans l'adresse : WhatsApp, LinkedIn… voient une nouvelle image à chaque modification.
+    shareCard: { url: `/share-card.png?v=${store.revision()}`, width: CARD_WIDTH, height: CARD_HEIGHT }
   });
+});
+
+// Image d'aperçu des partages, dessinée d'après le haut de la page et gardée en mémoire
+// tant que le contenu ne change pas. L'adresse du site n'y figure que si SITE_URL est
+// réglé : jamais d'après l'en-tête Host, que n'importe qui peut choisir.
+let shareCardCache = { key: '', png: null };
+app.get('/share-card.png', (req, res) => {
+  const key = store.revision();
+  if (shareCardCache.key !== key) {
+    const c = store.read();
+    const p = c.profile || {};
+    const accent = helpers.color(c.site?.accent, '#4F3BF5');
+    const png = renderCard({
+      kicker: p.kicker,
+      name: p.name,
+      headline: p.headline,
+      accent,
+      host: SITE_URL ? new URL(SITE_URL).host : '',
+      photo: photoData(localFile(IMAGE_ROOTS, helpers.safeUrl(p.photo))),
+      stats: helpers.list(c.stats).map((s) => ({
+        value: s.value,
+        label: s.label,
+        bg: helpers.color(s.bg, accent),
+        text: helpers.color(s.text, '#FFFFFF')
+      }))
+    });
+    shareCardCache = { key, png };
+  }
+  res.type('png').set('Cache-Control', 'public, max-age=3600').send(shareCardCache.png);
 });
 
 app.get('/healthz', (req, res) => res.json({ ok: true }));

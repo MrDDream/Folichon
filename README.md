@@ -47,6 +47,7 @@ Folichon is a single page that tells your story (who you are, what you build, wh
 | 🌗 **Light and dark**             | Follows the system, with a switch on the page and in the editor.                                                                                                  |
 | 🎨 **7 themes, your fonts**       | Folichon, Magazine, Terminal, Retro, Neon, Pop or Plain CV: each changes the layout, not just the colours. Pick a font for headings and body, or upload your own. |
 | 📱 **Mobile first**               | Sticky menu, compact layout, the phone's own share sheet.                                                                                                         |
+| 🔗 **Share preview**              | Links shared on WhatsApp, LinkedIn or Discord show a card drawn like the top of your page: name, photo, headline and key figures.                                 |
 | 🌍 **French and English**         | The page and the editor speak both.                                                                                                                               |
 | 🪶 **Light**                      | One container, no database, no external resource: fonts are served by the site, images are WebP.                                                                  |
 
@@ -116,7 +117,7 @@ To build the image yourself: clone the repository, `cp .env.example .env`, then 
 | `ADMIN_PASSWORD` | Admin password. Without it (or if too short), the admin is disabled.                                                                      | —                                      |
 | `ADMIN_PATH`     | Secret admin address.                                                                                                                     | random, kept in `data/admin-path.txt`  |
 | `TRUST_PROXY`    | Behind a reverse proxy: proxies trusted for the visitor IP, for example `loopback, uniquelocal` or `1`. `true` is refused (IP spoofing).  | off                                    |
-| `SITE_URL`       | Public address of the site, used for share previews (WhatsApp, LinkedIn…).                                                                | taken from the request                 |
+| `SITE_URL`       | Public address of the site, used for share previews (WhatsApp, LinkedIn…) and shown on the preview card.                                  | taken from the request                 |
 | `UPDATE_CHECK`   | Checks GitHub (at most every 12 h) whether a newer Folichon version exists, shown next to the version in the admin. `false` turns it off. | on                                     |
 | `SESSION_SECRET` | Session signing key.                                                                                                                      | random, kept in `data/.session-secret` |
 | `PORT`           | Port inside the container.                                                                                                                | `3000`                                 |
@@ -162,4 +163,4 @@ npm run check     # Prettier, ESLint and tests
 
 ## License
 
-[MIT](LICENSE). The fonts (Inter, Bricolage Grotesque, JetBrains Mono) are under the SIL Open Font License: see `public/fonts/`.
+[MIT](LICENSE). The fonts (Inter, Bricolage Grotesque, JetBrains Mono) are under the SIL Open Font License: see `public/fonts/` and `src/share-card/`.

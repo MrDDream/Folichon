@@ -10,6 +10,7 @@ import { createStore } from '../src/store.js';
 import { isNewer, releaseUrl } from '../src/version.js';
 import zlib from 'node:zlib';
 import { createZip, crc32, readZip, ZipError } from '../src/zip.js';
+import { cardSvg, headlineWords, measure, renderCard, wrap } from '../src/share-card.js';
 
 test('siteTheme : seuls les thèmes connus passent, sinon le thème par défaut', () => {
   for (const name of h.siteThemes) assert.equal(h.siteTheme(name), name);
@@ -201,4 +202,35 @@ test('zip : aller-retour, fichiers compressés (deflate) et archives abîmées',
   assert.throws(() => readZip(broken), ZipError);
   assert.throws(() => readZip(Buffer.from('pas une archive')), ZipError);
   assert.throws(() => readZip(Buffer.alloc(0)), ZipError);
+});
+
+test("carte d'aperçu : mots colorés, retour à la ligne, texte échappé", () => {
+  assert.deepEqual(headlineWords('Je crée des *apps Android* ici'), [
+    { text: 'Je', hl: false },
+    { text: 'crée', hl: false },
+    { text: 'des', hl: false },
+    { text: 'apps', hl: true },
+    { text: 'Android', hl: true },
+    { text: 'ici', hl: false }
+  ]);
+  const font = ['Inter', 700];
+  assert.ok(measure('MMMM', font, 32) > measure('iiii', font, 32));
+  const long = headlineWords('un deux trois quatre cinq six sept huit neuf dix onze douze treize quatorze');
+  const lines = wrap(long, font, 32, 300, 2);
+  assert.equal(lines.length, 2);
+  assert.ok(lines.every((l) => measure(l.map((w) => w.text).join(' '), font, 32) <= 300));
+  assert.match(lines[1].at(-1).text, /…$/);
+
+  const svg = cardSvg({ name: 'Ada <script>', headline: 'a & b', kicker: '"x"', accent: '#4F3BF5', stats: [] });
+  assert.doesNotMatch(svg, /<script>/);
+  assert.match(svg, /Ada &lt;script&gt;/);
+  assert.match(svg, /a &amp; b/);
+  // Sans photo : les initiales dans le rond.
+  assert.match(svg, />AS<\/text>/);
+  const png = renderCard({
+    name: 'Ada Lovelace',
+    accent: '#4F3BF5',
+    stats: [{ value: '3', label: 'apps', bg: '#FFD84D', text: '#2B2200' }]
+  });
+  assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
 });

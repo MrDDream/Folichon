@@ -46,6 +46,7 @@ Folichon, c'est une seule page qui raconte ton histoire (qui tu es, ce que tu co
 | 🔐 **Sécurisé**                  | Administration à une adresse secrète, mot de passe **et** double authentification, essais limités, sessions révocables, en-têtes de sécurité stricts.                                                       |
 | 🌗 **Clair et sombre**           | Suit le système, avec un bouton sur la page et dans l'éditeur.                                                                                                                                              |
 | 🎨 **7 thèmes, tes polices**     | Folichon, Magazine, Terminal, Rétro, Néon, Pop ou CV sobre : chacun change la mise en page, pas seulement les couleurs. Une police pour les titres et le texte, ou la tienne en fichier.                    |
+| 🔗 **Aperçu de partage**         | Un lien partagé sur WhatsApp, LinkedIn ou Discord affiche une carte dessinée comme le haut de ta page : nom, photo, accroche et chiffres clés.                                                              |
 | 📱 **Pensé mobile**              | Menu collant, mise en page compacte, menu de partage du téléphone.                                                                                                                                          |
 | 🌍 **Français et anglais**       | La page et l'éditeur parlent les deux.                                                                                                                                                                      |
 | 🪶 **Léger**                     | Un seul conteneur, pas de base de données, aucune ressource externe : polices servies par le site, images en WebP.                                                                                          |
@@ -116,7 +117,7 @@ Pour construire l'image toi-même : clone le dépôt, `cp .env.example .env`, pu
 | `ADMIN_PASSWORD` | Mot de passe de l'admin. Sans lui (ou trop court), l'admin est désactivée.                                                                                     | —                                             |
 | `ADMIN_PATH`     | Adresse secrète de l'admin.                                                                                                                                    | aléatoire, gardée dans `data/admin-path.txt`  |
 | `TRUST_PROXY`    | Derrière un reverse proxy : proxys à croire pour l'IP des visiteurs, par exemple `loopback, uniquelocal` ou `1`. `true` est refusé (IP falsifiables).          | désactivé                                     |
-| `SITE_URL`       | Adresse publique du site, pour les aperçus de partage (WhatsApp, LinkedIn…).                                                                                   | déduite de la requête                         |
+| `SITE_URL`       | Adresse publique du site, pour les aperçus de partage (WhatsApp, LinkedIn…), affichée sur la carte d'aperçu.                                                   | déduite de la requête                         |
 | `UPDATE_CHECK`   | Vérifie sur GitHub (au plus toutes les 12 h) si une version plus récente de Folichon existe, affichée à côté de la version dans l'admin. `false` la désactive. | activée                                       |
 | `SESSION_SECRET` | Clé de signature des sessions.                                                                                                                                 | aléatoire, gardée dans `data/.session-secret` |
 | `PORT`           | Port d'écoute dans le conteneur.                                                                                                                               | `3000`                                        |
@@ -162,4 +163,4 @@ npm run check     # Prettier, ESLint et tests
 
 ## Licence
 
-[MIT](LICENSE). Les polices (Inter, Bricolage Grotesque, JetBrains Mono) sont sous licence SIL Open Font License : voir `public/fonts/`.
+[MIT](LICENSE). Les polices (Inter, Bricolage Grotesque, JetBrains Mono) sont sous licence SIL Open Font License : voir `public/fonts/` et `src/share-card/`.
