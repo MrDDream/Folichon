@@ -9,6 +9,7 @@ const BASE = body.dataset.base;
 const SOCIAL_TYPES = body.dataset.socialTypes.split(',');
 const ICONS = body.dataset.iconNames.split(',');
 const FONT_PRESETS = JSON.parse(body.dataset.fontPresets || '[]');
+const PLATFORMS = JSON.parse(body.dataset.platforms || '[]');
 const $status = document.getElementById('status');
 const $save = document.getElementById('save');
 const $editor = document.getElementById('editor');
@@ -26,6 +27,8 @@ const group = (label, fields, o = {}) => ({ kind: 'group', label, fields, ...o }
 const list = (label, item, o = {}) => ({ kind: 'list', label, item, ...o });
 const themes = (label, o = {}) => ({ kind: 'themes', label, ...o });
 const font = (label, o = {}) => ({ kind: 'font', label, ...o });
+const platforms = (label, o = {}) => ({ kind: 'platforms', label, ...o });
+const repoImport = (label, o = {}) => ({ kind: 'repoImport', label, ...o });
 
 // Thèmes de la page publique (même liste que siteThemes dans src/helpers.js).
 // Les vignettes de l'admin sont dessinées en CSS (.tp-<id> dans admin.css).
@@ -174,11 +177,18 @@ const SECTIONS = [
       ],
       [
         'projects',
+        repoImport('Importer depuis un dépôt', {
+          help: 'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, l’accroche, les langages, les plateformes et les liens sont remplis d’après le dépôt public ; rien n’est enregistré avant « Enregistrer ».'
+        })
+      ],
+      [
+        'projects',
         list(
           'Grands projets (un par ligne)',
           group('', [
             ['name', text('Nom')],
             ['tag', text('Étiquette')],
+            ['platforms', platforms('Plateformes', { help: 'Affichées avec leur logo sous l’étiquette.' })],
             ['tagline', text('Accroche')],
             ['description', area('Description')],
             ['bullets', lines('Points forts (un par ligne)')],
@@ -470,6 +480,7 @@ function newProject() {
   return {
     name: t('Nouveau projet'),
     tag: '',
+    platforms: [],
     tagline: '',
     description: '',
     bullets: [],
@@ -744,6 +755,10 @@ function renderNode(sch, parent, key, path) {
       return renderThemes(sch, parent, key);
     case 'font':
       return renderFont(sch, parent, key);
+    case 'platforms':
+      return renderPlatforms(sch, parent, key);
+    case 'repoImport':
+      return renderRepoImport(sch, parent, key);
     default:
       return el('p', {}, t('Champ inconnu : {kind}', { kind: sch.kind }));
   }
@@ -908,6 +923,135 @@ function renderFont(sch, parent, key) {
   update();
   const fid = (select.id = id());
   return el('div', { class: 'field font-field' }, el('label', { for: fid }, t(sch.label)), select, sample, upload);
+}
+
+// Plateformes d'un projet : une case à cocher par plateforme, avec son logo.
+// L'ordre des cases cochées est celui de la liste ; les valeurs inconnues sont gardées.
+function renderPlatforms(sch, parent, key) {
+  if (!Array.isArray(parent[key])) parent[key] = [];
+  const boxes = PLATFORMS.map((p) => {
+    const input = el('input', {
+      type: 'checkbox',
+      value: p.id,
+      checked: parent[key].includes(p.id),
+      onchange: () => {
+        const chosen = new Set(parent[key]);
+        if (input.checked) chosen.add(p.id);
+        else chosen.delete(p.id);
+        const known = PLATFORMS.map((q) => q.id).filter((id) => chosen.has(id));
+        parent[key] = [...known, ...[...chosen].filter((id) => !known.includes(id))];
+        markDirty();
+      }
+    });
+    return el(
+      'label',
+      { class: 'platform-option' },
+      input,
+      el('img', { src: `/assets/img/platforms/${p.id}.svg`, alt: '', width: 20, height: 20 }),
+      el('span', {}, p.name)
+    );
+  });
+  return el(
+    'fieldset',
+    { class: 'platform-field' },
+    el('legend', {}, t(sch.label)),
+    sch.help ? el('small', { class: 'help' }, t(sch.help)) : null,
+    el('div', { class: 'platform-grid' }, boxes)
+  );
+}
+
+// Projet pré-rempli d'après les informations publiques d'un dépôt.
+function projectFromRepo(repo, link) {
+  const project = newProject();
+  const mobile = repo.platforms.some((p) => ['android', 'ios'].includes(p));
+  let host = '';
+  try {
+    host = repo.homepage ? new URL(repo.homepage).host : '';
+  } catch {
+    /* adresse du site illisible */
+  }
+  const bullets = [];
+  if (repo.stars > 0) {
+    bullets.push(
+      t(repo.stars === 1 ? '{n} étoile sur {site}' : '{n} étoiles sur {site}', {
+        n: repo.stars.toLocaleString(),
+        site: repo.provider
+      })
+    );
+  }
+  if (repo.license) bullets.push(t('Licence {license}', { license: repo.license }));
+  return {
+    ...project,
+    name: repo.name || project.name,
+    platforms: repo.platforms,
+    tagline: repo.description,
+    bullets,
+    stack: repo.languages,
+    codeUrl: repo.url || link,
+    siteUrl: repo.homepage,
+    media: {
+      ...project.media,
+      type: mobile ? 'phones' : host ? 'browser' : 'wide',
+      framed: mobile,
+      browserUrl: host
+    }
+  };
+}
+
+// Champ « lien du dépôt » au-dessus de la liste des projets : ajoute un projet pré-rempli.
+function renderRepoImport(sch, parent, key) {
+  const input = el('input', {
+    type: 'url',
+    placeholder: 'https://github.com/moi/mon-projet',
+    spellcheck: 'false',
+    autocomplete: 'off'
+  });
+  const button = el('button', { type: 'submit', class: 'btn btn-small btn-primary' }, t('Importer'));
+  const form = el(
+    'form',
+    {
+      class: 'repo-import',
+      onsubmit: async (e) => {
+        e.preventDefault();
+        const link = input.value.trim();
+        if (!link) return input.focus();
+        button.disabled = true;
+        setStatus('Lecture du dépôt…');
+        try {
+          const repo = await api('/repo', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ url: link })
+          });
+          if (!Array.isArray(parent[key])) parent[key] = [];
+          parent[key].push(projectFromRepo(repo, link));
+          const index = parent[key].length - 1;
+          openItems.add(`${key}[${index}]`);
+          markDirty();
+          render();
+          setStatus('Projet « {name} » ajouté d’après le dépôt — complète-le puis enregistre', 'warn', {
+            name: parent[key][index].name
+          });
+          document.querySelectorAll('#s-projets > fieldset.list > details.list-item')[index]?.scrollIntoView({
+            behavior: 'smooth',
+            block: 'start'
+          });
+        } catch (err) {
+          button.disabled = false;
+          setStatus('Import du dépôt impossible : {message}', 'error', { message: t(err.message) });
+        }
+      }
+    },
+    el('div', { class: 'repo-import-row' }, input, button)
+  );
+  const fid = (input.id = id());
+  return el(
+    'fieldset',
+    {},
+    el('legend', {}, el('label', { for: fid }, t(sch.label))),
+    sch.help ? el('small', { class: 'help' }, t(sch.help)) : null,
+    form
+  );
 }
 
 function renderImage(sch, parent, key) {

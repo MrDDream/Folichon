@@ -112,16 +112,17 @@ To build the image yourself: clone the repository, `cp .env.example .env`, then 
 
 ## Environment variables
 
-| Variable         | Purpose                                                                                                                                   | Default                                |
-| ---------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
-| `ADMIN_PASSWORD` | Admin password. Without it (or if too short), the admin is disabled.                                                                      | —                                      |
-| `ADMIN_PATH`     | Secret admin address.                                                                                                                     | random, kept in `data/admin-path.txt`  |
-| `TRUST_PROXY`    | Behind a reverse proxy: proxies trusted for the visitor IP, for example `loopback, uniquelocal` or `1`. `true` is refused (IP spoofing).  | off                                    |
-| `SITE_URL`       | Public address of the site, used for share previews (WhatsApp, LinkedIn…) and shown on the preview card.                                  | taken from the request                 |
-| `UPDATE_CHECK`   | Checks GitHub (at most every 12 h) whether a newer Folichon version exists, shown next to the version in the admin. `false` turns it off. | on                                     |
-| `SESSION_SECRET` | Session signing key.                                                                                                                      | random, kept in `data/.session-secret` |
-| `PORT`           | Port inside the container.                                                                                                                | `3000`                                 |
-| `DATA_DIR`       | Data folder.                                                                                                                              | `/data` in Docker                      |
+| Variable                    | Purpose                                                                                                                                   | Default                                |
+| --------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------- | -------------------------------------- |
+| `ADMIN_PASSWORD`            | Admin password. Without it (or if too short), the admin is disabled.                                                                      | —                                      |
+| `ADMIN_PATH`                | Secret admin address.                                                                                                                     | random, kept in `data/admin-path.txt`  |
+| `TRUST_PROXY`               | Behind a reverse proxy: proxies trusted for the visitor IP, for example `loopback, uniquelocal` or `1`. `true` is refused (IP spoofing).  | off                                    |
+| `SITE_URL`                  | Public address of the site, used for share previews (WhatsApp, LinkedIn…) and shown on the preview card.                                  | taken from the request                 |
+| `UPDATE_CHECK`              | Checks GitHub (at most every 12 h) whether a newer Folichon version exists, shown next to the version in the admin. `false` turns it off. | on                                     |
+| `REPO_IMPORT_ALLOW_PRIVATE` | Lets “Import from a repository” reach addresses on the local network (a GitLab or Gitea hosted at home). Refused otherwise.               | off                                    |
+| `SESSION_SECRET`            | Session signing key.                                                                                                                      | random, kept in `data/.session-secret` |
+| `PORT`                      | Port inside the container.                                                                                                                | `3000`                                 |
+| `DATA_DIR`                  | Data folder.                                                                                                                              | `/data` in Docker                      |
 
 ## Two-factor authentication
 
@@ -135,6 +136,8 @@ To build the image yourself: clone the repository, `cp .env.example .env`, then 
 - **Lists**: add, remove and reorder items with the ↑ ↓ arrows.
 - **Images**: "Envoyer une image" button, or an `https://…` link.
 - **Colours**: each project has its own colour set.
+- **Import from a repository** (Projects section): paste a GitHub, GitLab, Codeberg, Gitea, Forgejo or Bitbucket link and a new project is filled in from the public repository: name, tagline, languages, platforms, star count, licence, code and site links. Self-hosted GitLab and Gitea work too. Complete it, then save.
+- **Platforms**: tick Android, iOS, Windows, Linux, Docker, Raspberry Pi, Home Assistant… (33 in all) and they show with their logo on the project card.
 - **Appearance** (its own section in the admin menu): page language (French or English), accent colour, 7 themes that change the layout and style of the public page; light/dark mode and the accent colour stay yours. One font for headings, one for body text: a bundled one (Bricolage Grotesque, Inter, JetBrains Mono), a family already installed on devices (serif, rounded, handwritten…), or your own file (WOFF2, WOFF, TTF or OTF), served by your server. Check that its licence allows use on a website.
 - **Headline**: words between asterisks take the accent colour, for example `I build *Android apps*`.
 - **Save** (or Ctrl/Cmd + S): the public page updates at once; the previous version is kept in `data/content.backup.json`. If the content changed elsewhere (another tab), saving is refused instead of overwriting it.
@@ -163,4 +166,4 @@ npm run check     # Prettier, ESLint and tests
 
 ## License
 
-[MIT](LICENSE). The fonts (Inter, Bricolage Grotesque, JetBrains Mono) are under the SIL Open Font License: see `public/fonts/` and `src/share-card/`.
+[MIT](LICENSE). The fonts (Inter, Bricolage Grotesque, JetBrains Mono) are under the SIL Open Font License: see `public/fonts/` and `src/share-card/`. The platform logos come from [selfh.st/icons](https://selfh.st/icons/) (CC BY 4.0): see `public/img/platforms/LICENSE.txt`; they are trademarks of their owners.

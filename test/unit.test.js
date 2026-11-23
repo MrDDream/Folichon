@@ -8,6 +8,7 @@ import { createAuth } from '../src/auth.js';
 import { createImageSizer } from '../src/images.js';
 import { createStore } from '../src/store.js';
 import { isNewer, releaseUrl } from '../src/version.js';
+import { guessPlatforms, isPrivateAddress, parseRepoUrl, RepoError } from '../src/repo.js';
 import zlib from 'node:zlib';
 import { createZip, crc32, readZip, ZipError } from '../src/zip.js';
 import { cardSvg, headlineWords, measure, renderCard, wrap } from '../src/share-card.js';
@@ -233,4 +234,51 @@ test("carte d'aperçu : mots colorés, retour à la ligne, texte échappé", () 
     stats: [{ value: '3', label: 'apps', bg: '#FFD84D', text: '#2B2200' }]
   });
   assert.deepEqual([png.readUInt32BE(16), png.readUInt32BE(20)], [1200, 630]);
+});
+
+test('dépôts : liens GitHub, GitLab, Gitea, SSH et pages internes ramenés au dépôt', () => {
+  const cases = [
+    ['https://github.com/moi/projet', 'github.com', ['moi', 'projet']],
+    ['github.com/moi/projet/tree/main/src', 'github.com', ['moi', 'projet']],
+    ['git@github.com:moi/projet.git', 'github.com', ['moi', 'projet']],
+    ['https://gitlab.com/groupe/sous-groupe/projet/-/tree/main', 'gitlab.com', ['groupe', 'sous-groupe', 'projet']],
+    ['https://codeberg.org/moi/projet/src/branch/main', 'codeberg.org', ['moi', 'projet']],
+    ['https://git.maison.fr/moi/projet/releases', 'git.maison.fr', ['moi', 'projet']]
+  ];
+  for (const [url, host, path] of cases) assert.deepEqual(parseRepoUrl(url), { host, path }, url);
+  for (const bad of ['', 'https://github.com/moi', 'ftp://github.com/a/b', 'pas un lien', 'https://x.fr/a/<b>']) {
+    assert.throws(() => parseRepoUrl(bad), RepoError, bad);
+  }
+});
+
+test('dépôts : les adresses du réseau local sont reconnues', () => {
+  for (const ip of [
+    '127.0.0.1',
+    '10.1.2.3',
+    '172.20.0.5',
+    '192.168.1.1',
+    '169.254.169.254',
+    '::1',
+    'fd00::1',
+    '::ffff:192.168.0.1'
+  ]) {
+    assert.equal(isPrivateAddress(ip), true, ip);
+  }
+  for (const ip of ['140.82.121.4', '2606:4700::1111', '::ffff:8.8.8.8']) assert.equal(isPrivateAddress(ip), false, ip);
+});
+
+test('dépôts et plateformes : devinées d’après les sujets, affichées avec leur logo', () => {
+  assert.deepEqual(guessPlatforms(['Android', 'jetpack-compose', 'ios', 'kotlin']), ['android', 'ios']);
+  assert.deepEqual(guessPlatforms([], { Go: 10, Dockerfile: 1 }), ['docker']);
+  const shown = h.projectPlatforms(['ios', 'inconnue', 'ios', 42, 'docker']);
+  assert.deepEqual(
+    shown.map((p) => [p.id, p.name, p.icon]),
+    [
+      ['ios', 'iOS', '/assets/img/platforms/ios.svg'],
+      ['docker', 'Docker', '/assets/img/platforms/docker.svg']
+    ]
+  );
+  assert.deepEqual(h.projectPlatforms(undefined), []);
+  // Chaque plateforme de la liste a son logo.
+  for (const p of h.platforms) assert.ok(fs.existsSync(`public/img/platforms/${p.id}.svg`), p.id);
 });

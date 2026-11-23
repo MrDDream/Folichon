@@ -153,6 +153,7 @@ const SITE_TEXT = {
     emailButton: 'E-mail ↗',
     viewCode: 'Voir le code ↗',
     projectSite: 'Site du projet ↗',
+    platforms: 'Plateformes',
     projectN: 'Projet {n}',
     photoOf: 'Photo de {name}',
     screenshot: '{name} : capture d’écran',
@@ -185,6 +186,7 @@ const SITE_TEXT = {
     emailButton: 'E-mail ↗',
     viewCode: 'View code ↗',
     projectSite: 'Project site ↗',
+    platforms: 'Platforms',
     projectN: 'Project {n}',
     photoOf: 'Photo of {name}',
     screenshot: '{name}: screenshot',
@@ -321,3 +323,53 @@ export function icon(name, size = 24) {
 }
 
 export const iconNames = Object.keys(icons);
+
+// Plateformes d'un grand projet (Android, iOS, Docker…), affichées avec leur logo.
+// Les logos viennent de selfh.st/icons (CC BY 4.0) et sont servis par Folichon lui-même
+// (public/img/platforms) : la page ne contacte aucun autre site. Ils sont posés sur une
+// pastille blanche, lisible quel que soit le thème ou le mode sombre.
+export const platforms = [
+  ['android', 'Android'],
+  ['ios', 'iOS'],
+  ['macos', 'macOS'],
+  ['windows', 'Windows'],
+  ['linux', 'Linux'],
+  ['web', 'Web'],
+  ['docker', 'Docker'],
+  ['kubernetes', 'Kubernetes'],
+  ['raspberry-pi', 'Raspberry Pi'],
+  ['home-assistant', 'Home Assistant'],
+  ['esphome', 'ESPHome'],
+  ['arduino', 'Arduino'],
+  ['chrome', 'Chrome'],
+  ['firefox', 'Firefox'],
+  ['edge', 'Edge'],
+  ['safari', 'Safari'],
+  ['google-play', 'Google Play'],
+  ['app-store', 'App Store'],
+  ['f-droid', 'F-Droid'],
+  ['steam', 'Steam'],
+  ['steam-deck', 'Steam Deck'],
+  ['playstation', 'PlayStation'],
+  ['xbox', 'Xbox'],
+  ['switch', 'Nintendo Switch'],
+  ['proxmox', 'Proxmox'],
+  ['unraid', 'Unraid'],
+  ['truenas', 'TrueNAS'],
+  ['ubuntu', 'Ubuntu'],
+  ['debian', 'Debian'],
+  ['arch', 'Arch Linux'],
+  ['fedora', 'Fedora'],
+  ['freebsd', 'FreeBSD'],
+  ['nixos', 'NixOS']
+].map(([id, name]) => ({ id, name }));
+
+// Plateformes connues d'un projet, dans l'ordre choisi, sans doublon.
+export function projectPlatforms(ids) {
+  const seen = new Set();
+  return list(ids)
+    .filter((id) => typeof id === 'string' && !seen.has(id) && seen.add(id))
+    .map((id) => platforms.find((p) => p.id === id))
+    .filter(Boolean)
+    .map((p) => ({ ...p, icon: `/assets/img/platforms/${p.id}.svg` }));
+}

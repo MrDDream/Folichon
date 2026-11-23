@@ -65,7 +65,8 @@
   "projects": [
     {
       "name": "Appli mobile",
-      "tag": "Android · iOS",
+      "tag": "Projet perso",
+      "platforms": ["android", "ios"],
       "tagline": "Une phrase d'accroche qui donne envie.",
       "description": "Deux ou trois lignes pour présenter le projet : à quoi il sert, pour qui, et ce qui le rend différent.",
       "bullets": [
@@ -95,7 +96,8 @@
     },
     {
       "name": "Service web",
-      "tag": "Web · Docker",
+      "tag": "Open source",
+      "platforms": ["web", "docker"],
       "tagline": "Ce que le service apporte, en une ligne.",
       "description": "Présente le service : le problème qu'il résout et la façon dont on l'installe ou l'utilise.",
       "bullets": ["Fonctionnalité principale", "Sécurité, performances ou accessibilité", "Tests, CI ou déploiement"],
@@ -121,7 +123,8 @@
     },
     {
       "name": "Outil serveur",
-      "tag": "Android",
+      "tag": "En production",
+      "platforms": ["android", "linux"],
       "tagline": "Administrer quelque chose, depuis son téléphone.",
       "description": "Un projet plus technique : ce qu'il pilote, avec quelles API, et pourquoi tu l'as construit.",
       "bullets": ["Tableau de bord en direct", "Actions à distance", "Journal et notifications"],

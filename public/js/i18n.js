@@ -3,6 +3,35 @@
 // Les variables s'écrivent {nom} : t('Échec : {message}', { message }).
 
 const EN = {
+  // Import d'un dépôt et plateformes des grands projets
+  'Importer depuis un dépôt': 'Import from a repository',
+  'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, l’accroche, les langages, les plateformes et les liens sont remplis d’après le dépôt public ; rien n’est enregistré avant « Enregistrer ».':
+    'GitHub, GitLab, Codeberg, Gitea, Forgejo or Bitbucket. The name, tagline, languages, platforms and links are filled in from the public repository; nothing is saved until you click “Save”.',
+  Importer: 'Import',
+  'Lecture du dépôt…': 'Reading the repository…',
+  'Projet « {name} » ajouté d’après le dépôt — complète-le puis enregistre':
+    'Project “{name}” added from the repository — complete it, then save',
+  'Import du dépôt impossible : {message}': 'Could not import the repository: {message}',
+  '{n} étoile sur {site}': '{n} star on {site}',
+  '{n} étoiles sur {site}': '{n} stars on {site}',
+  'Licence {license}': '{license} license',
+  Plateformes: 'Platforms',
+  'Affichées avec leur logo sous l’étiquette.': 'Shown with their logo under the label.',
+  'Colle le lien du dépôt.': 'Paste the repository link.',
+  'Seuls les liens https sont acceptés.': 'Only https links are accepted.',
+  'Ce lien ne ressemble pas à une adresse de dépôt.': 'This link does not look like a repository address.',
+  'Ce lien ne ressemble pas à une adresse de dépôt (site/propriétaire/projet).':
+    'This link does not look like a repository address (site/owner/project).',
+  'Cette adresse mène au réseau local : import refusé.': 'This address points to the local network: import refused.',
+  'Dépôt introuvable (il est peut-être privé).': 'Repository not found (it may be private).',
+  'Le site du dépôt limite les requêtes : réessaie dans quelques minutes.':
+    'The repository site is rate-limiting requests: try again in a few minutes.',
+  'Site du dépôt introuvable.': 'Repository site not found.',
+  'Impossible de joindre le site du dépôt.': 'Could not reach the repository site.',
+  'Le site du dépôt ne répond pas.': 'The repository site is not responding.',
+  'Trop de redirections.': 'Too many redirects.',
+  'Réponse trop grande.': 'Response too large.',
+  'Réponse illisible.': 'Unreadable response.',
   // Barre du haut, menu, page de connexion
   'Folichon · administration': 'Folichon · admin',
   Connexion: 'Sign in',

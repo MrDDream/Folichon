@@ -1,0 +1,10 @@
+Platform icons (every file in this folder except web.svg) come from
+selfh.st/icons — https://selfh.st/icons/ — https://github.com/selfhst/icons
+Licensed under the Creative Commons Attribution 4.0 International license (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+Files were renamed (for example apple.svg → ios.svg and macos.svg); their content is unchanged.
+The logos themselves are trademarks of their respective owners, used here only to say
+which platform a project runs on.
+
+web.svg is drawn for Folichon (MIT, like the rest of the project).

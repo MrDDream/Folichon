@@ -12,6 +12,7 @@ import { createImageSizer, localFile } from './images.js';
 import { CARD_HEIGHT, CARD_WIDTH, photoData, renderCard } from './share-card.js';
 import * as totp from './totp.js';
 import { updateInfo } from './version.js';
+import { fetchRepo, RepoError } from './repo.js';
 import { createZip, readZip, ZipError } from './zip.js';
 import * as helpers from './helpers.js';
 
@@ -76,6 +77,8 @@ const ADMIN_PATH =
 const ADMIN_PASSWORD = process.env.ADMIN_PASSWORD || '';
 const SECRET = process.env.SESSION_SECRET || persisted('.session-secret', () => crypto.randomBytes(32).toString('hex'));
 const SITE_URL = normalizeSiteUrl(process.env.SITE_URL);
+// Import de dépôts : autoriser les adresses du réseau local (GitLab ou Gitea installé chez soi).
+const REPO_IMPORT_ALLOW_PRIVATE = process.env.REPO_IMPORT_ALLOW_PRIVATE === 'true';
 const adminEnabled =
   ADMIN_PASSWORD.length >= 8 && !['changeme', 'password', 'motdepasse'].includes(ADMIN_PASSWORD.toLowerCase());
 
@@ -416,7 +419,8 @@ admin.get('/', (req, res) => {
     base: ADMIN_PATH,
     socialTypes: helpers.socialTypes,
     iconNames: helpers.iconNames,
-    fontPresets: helpers.fontPresets
+    fontPresets: helpers.fontPresets,
+    platforms: helpers.platforms
   });
 });
 
@@ -502,6 +506,17 @@ admin.post('/api/upload', requireLogin, sameOrigin, requireAjax, (req, res) => {
     }
     res.json({ url: `/uploads/${req.file.filename}` });
   });
+});
+
+// Informations publiques d'un dépôt (GitHub, GitLab, Codeberg…), pour pré-remplir un projet.
+// Rien n'est enregistré : l'admin crée le projet, à vérifier avant « Enregistrer ».
+admin.post('/api/repo', requireLogin, sameOrigin, requireAjax, express.json({ limit: '4kb' }), async (req, res) => {
+  try {
+    res.json(await fetchRepo(req.body?.url, { allowPrivate: REPO_IMPORT_ALLOW_PRIVATE }));
+  } catch (err) {
+    if (!(err instanceof RepoError)) throw err;
+    res.status(400).json({ error: err.message });
+  }
 });
 
 // Le contenu vient de l'admin (modifications pas encore enregistrées comprises).

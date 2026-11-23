@@ -54,6 +54,7 @@ test('la page publique affiche le contenu par défaut', async () => {
   // Thème par défaut : aucune feuille de thème en plus.
   assert.doesNotMatch(html, /\/assets\/css\/themes\//);
   assert.match(html, /<article id="projet-appli-mobile" data-slug="appli-mobile"/);
+  assert.match(html, /<li class="platform"><img src="\/assets\/img\/platforms\/android\.svg"[^>]*>Android<\/li>/);
   assert.ok(res.headers.get('content-security-policy'));
 
   const icon = await fetch(`${BASE}/favicon.svg`);
@@ -128,6 +129,26 @@ test('double authentification : configuration par QR code, puis code à chaque c
   assert.equal((await post('/2fa', { code: good }, pending2)).res.status, 401);
   const next = await post('/2fa', { code: codeAt(secret, counterAt() + 1) }, pending2);
   assert.equal(next.res.status, 303);
+});
+
+test('import de dépôt : les liens invalides ou vers le réseau local sont refusés', async () => {
+  const ask = (url) =>
+    fetch(`${BASE + ADMIN}/api/repo`, {
+      method: 'POST',
+      headers: { cookie, 'Content-Type': 'application/json', 'X-Requested-With': 'folichon-admin' },
+      body: JSON.stringify({ url })
+    });
+  for (const url of ['', 'pas un lien', 'https://127.0.0.1/moi/projet', 'https://localhost/moi/projet']) {
+    const res = await ask(url);
+    assert.equal(res.status, 400, url);
+    assert.ok((await res.json()).error, url);
+  }
+  const anonymous = await fetch(`${BASE + ADMIN}/api/repo`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'folichon-admin' },
+    body: JSON.stringify({ url: 'https://github.com/a/b' })
+  });
+  assert.equal(anonymous.status, 401);
 });
 
 test('connexion, modification et page publique mise à jour', async () => {

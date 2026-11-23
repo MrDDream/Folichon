@@ -112,16 +112,17 @@ Pour construire l'image toi-même : clone le dépôt, `cp .env.example .env`, pu
 
 ## Variables d'environnement
 
-| Variable         | Rôle                                                                                                                                                           | Par défaut                                    |
-| ---------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
-| `ADMIN_PASSWORD` | Mot de passe de l'admin. Sans lui (ou trop court), l'admin est désactivée.                                                                                     | —                                             |
-| `ADMIN_PATH`     | Adresse secrète de l'admin.                                                                                                                                    | aléatoire, gardée dans `data/admin-path.txt`  |
-| `TRUST_PROXY`    | Derrière un reverse proxy : proxys à croire pour l'IP des visiteurs, par exemple `loopback, uniquelocal` ou `1`. `true` est refusé (IP falsifiables).          | désactivé                                     |
-| `SITE_URL`       | Adresse publique du site, pour les aperçus de partage (WhatsApp, LinkedIn…), affichée sur la carte d'aperçu.                                                   | déduite de la requête                         |
-| `UPDATE_CHECK`   | Vérifie sur GitHub (au plus toutes les 12 h) si une version plus récente de Folichon existe, affichée à côté de la version dans l'admin. `false` la désactive. | activée                                       |
-| `SESSION_SECRET` | Clé de signature des sessions.                                                                                                                                 | aléatoire, gardée dans `data/.session-secret` |
-| `PORT`           | Port d'écoute dans le conteneur.                                                                                                                               | `3000`                                        |
-| `DATA_DIR`       | Dossier des données.                                                                                                                                           | `/data` dans Docker                           |
+| Variable                    | Rôle                                                                                                                                                           | Par défaut                                    |
+| --------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- | --------------------------------------------- |
+| `ADMIN_PASSWORD`            | Mot de passe de l'admin. Sans lui (ou trop court), l'admin est désactivée.                                                                                     | —                                             |
+| `ADMIN_PATH`                | Adresse secrète de l'admin.                                                                                                                                    | aléatoire, gardée dans `data/admin-path.txt`  |
+| `TRUST_PROXY`               | Derrière un reverse proxy : proxys à croire pour l'IP des visiteurs, par exemple `loopback, uniquelocal` ou `1`. `true` est refusé (IP falsifiables).          | désactivé                                     |
+| `SITE_URL`                  | Adresse publique du site, pour les aperçus de partage (WhatsApp, LinkedIn…), affichée sur la carte d'aperçu.                                                   | déduite de la requête                         |
+| `UPDATE_CHECK`              | Vérifie sur GitHub (au plus toutes les 12 h) si une version plus récente de Folichon existe, affichée à côté de la version dans l'admin. `false` la désactive. | activée                                       |
+| `REPO_IMPORT_ALLOW_PRIVATE` | Autorise « Importer depuis un dépôt » à joindre des adresses du réseau local (un GitLab ou un Gitea installé chez soi). Refusé sinon.                          | désactivé                                     |
+| `SESSION_SECRET`            | Clé de signature des sessions.                                                                                                                                 | aléatoire, gardée dans `data/.session-secret` |
+| `PORT`                      | Port d'écoute dans le conteneur.                                                                                                                               | `3000`                                        |
+| `DATA_DIR`                  | Dossier des données.                                                                                                                                           | `/data` dans Docker                           |
 
 ## Double authentification
 
@@ -135,6 +136,8 @@ Pour construire l'image toi-même : clone le dépôt, `cp .env.example .env`, pu
 - **Listes** : ajoute, supprime et réordonne les éléments avec les flèches ↑ ↓.
 - **Images** : bouton « Envoyer une image » ou un lien `https://…`.
 - **Couleurs** : chaque grand projet a son propre jeu de couleurs.
+- **Importer depuis un dépôt** (section Projets) : colle un lien GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket, et un nouveau projet est pré-rempli d'après le dépôt public : nom, accroche, langages, plateformes, nombre d'étoiles, licence, liens du code et du site. Les GitLab et Gitea auto-hébergés marchent aussi. Complète-le, puis enregistre.
+- **Plateformes** : coche Android, iOS, Windows, Linux, Docker, Raspberry Pi, Home Assistant… (33 en tout) et elles s'affichent avec leur logo sur la carte du projet.
 - **Apparence** (sa propre section dans le menu de l'admin) : langue de la page (français ou anglais), couleur d'accent, 7 thèmes qui changent la mise en page et le style de la page publique ; le mode clair/sombre et la couleur d'accent restent les tiens. Une police pour les titres, une pour le texte : une fournie (Bricolage Grotesque, Inter, JetBrains Mono), une famille déjà installée sur les appareils (serif, arrondie, manuscrite…) ou ton propre fichier (WOFF2, WOFF, TTF ou OTF), servi par ton serveur. Vérifie que sa licence autorise l'usage sur un site.
 - **Accroche** : les mots entre astérisques prennent la couleur d'accent, par exemple `Je fabrique des *apps Android*`.
 - **Enregistrer** (ou Ctrl/Cmd + S) : la page publique est à jour immédiatement ; la version précédente est gardée dans `data/content.backup.json`. Si le contenu a changé ailleurs (autre onglet), l'enregistrement est refusé au lieu de l'écraser.
@@ -163,4 +166,4 @@ npm run check     # Prettier, ESLint et tests
 
 ## Licence
 
-[MIT](LICENSE). Les polices (Inter, Bricolage Grotesque, JetBrains Mono) sont sous licence SIL Open Font License : voir `public/fonts/` et `src/share-card/`.
+[MIT](LICENSE). Les polices (Inter, Bricolage Grotesque, JetBrains Mono) sont sous licence SIL Open Font License : voir `public/fonts/` et `src/share-card/`. Les logos des plateformes viennent de [selfh.st/icons](https://selfh.st/icons/) (CC BY 4.0) : voir `public/img/platforms/LICENSE.txt` ; ce sont des marques de leurs propriétaires.

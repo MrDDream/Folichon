@@ -171,6 +171,10 @@ main.wrap { display: flex; flex-direction: column; gap: 16px; padding-top: 16px;
 .project p.desc { margin: 0; color: var(--text); font-size: 16px; white-space: pre-line; }
 .project ul { margin: 0; padding-left: 20px; color: var(--text); font-size: 16px; display: flex; flex-direction: column; gap: 2px; }
 .chips { display: flex; flex-wrap: wrap; gap: 6px; }
+/* Plateformes : logo en couleur sur une pastille blanche, lisible sur tous les fonds. */
+.project ul.platforms { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: row; flex-wrap: wrap; gap: 6px; }
+.platform { display: inline-flex; align-items: center; gap: 7px; font-size: 13px; font-weight: 600; padding: 3px 11px 3px 3px; border-radius: var(--r-pill); background: var(--surface); color: var(--ink); }
+.platform img { width: 24px; height: 24px; padding: 4px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(21, 19, 31, .08); flex: none; }
 .chip { font-size: 12px; padding: 5px 11px; border-radius: var(--r-pill); background: var(--surface); color: var(--ink); }
 .project .row { gap: 8px; padding-top: 4px; }
 .btn-accent { background: var(--accent); color: var(--on-accent); }
