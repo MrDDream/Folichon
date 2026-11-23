@@ -8,7 +8,15 @@ import { createAuth } from '../src/auth.js';
 import { createImageSizer } from '../src/images.js';
 import { createStore } from '../src/store.js';
 import { isNewer, releaseUrl } from '../src/version.js';
-import { guessPlatforms, isPrivateAddress, parseRepoUrl, RepoError } from '../src/repo.js';
+import {
+  guessPlatforms,
+  guessStack,
+  isPrivateAddress,
+  parseRepoUrl,
+  readmeImages,
+  readmeSummary,
+  RepoError
+} from '../src/repo.js';
 import zlib from 'node:zlib';
 import { createZip, crc32, readZip, ZipError } from '../src/zip.js';
 import { cardSvg, headlineWords, measure, renderCard, wrap } from '../src/share-card.js';
@@ -269,16 +277,89 @@ test('dépôts : les adresses du réseau local sont reconnues', () => {
 
 test('dépôts et plateformes : devinées d’après les sujets, affichées avec leur logo', () => {
   assert.deepEqual(guessPlatforms(['Android', 'jetpack-compose', 'ios', 'kotlin']), ['android', 'ios']);
-  assert.deepEqual(guessPlatforms([], { Go: 10, Dockerfile: 1 }), ['docker']);
-  const shown = h.projectPlatforms(['ios', 'inconnue', 'ios', 42, 'docker']);
+  assert.deepEqual(guessPlatforms(['docker'], { Vue: 10 }), ['web']);
+  const shown = h.projectPlatforms(['ios', 'inconnue', 'android', 42, 'docker']);
   assert.deepEqual(
     shown.map((p) => [p.id, p.name, p.icon]),
     [
-      ['ios', 'iOS', '/assets/img/platforms/ios.svg'],
-      ['docker', 'Docker', '/assets/img/platforms/docker.svg']
+      ['android', 'Android', '/assets/img/platforms/android.svg'],
+      ['ios', 'iPhone', '/assets/img/platforms/ios.svg']
     ]
   );
   assert.deepEqual(h.projectPlatforms(undefined), []);
-  // Chaque plateforme de la liste a son logo.
+  assert.deepEqual(
+    h.platforms.map((p) => p.id),
+    ['android', 'ios', 'windows', 'linux', 'macos', 'raspberry-pi', 'web']
+  );
   for (const p of h.platforms) assert.ok(fs.existsSync(`public/img/platforms/${p.id}.svg`), p.id);
+  // Anciennes étiquettes → plateformes.
+  assert.deepEqual(h.platformsFromTag('Android · iOS'), ['android', 'ios']);
+  assert.deepEqual(h.platformsFromTag('Web · Docker'), ['web']);
+  assert.deepEqual(h.platformsFromTag(''), []);
+});
+
+test('technologies : logo trouvé quel que soit le nom saisi, sinon pastille simple', () => {
+  for (const [name, id] of [
+    ['Kotlin', 'kotlin'],
+    ['node.js', 'nodejs'],
+    ['Shell', 'bash'],
+    ['C++', 'cpp'],
+    ['golang', 'go'],
+    ['Jetpack Compose', 'compose']
+  ]) {
+    assert.equal(h.techFor(name)?.id, id, name);
+  }
+  assert.equal(h.techFor('Truc maison'), null);
+  assert.deepEqual(h.projectStack(['Kotlin', '', 'SFTP', null]), [
+    { name: 'Kotlin', icon: '/assets/img/tech/kotlin.svg' },
+    { name: 'SFTP', icon: '' }
+  ]);
+  for (const t of h.techs) assert.ok(fs.existsSync(`public/img/tech/${t.id}.svg`), t.id);
+  // Langages et sujets du dépôt : noms habituels, sans doublon ni plateforme répétée.
+  assert.deepEqual(
+    guessStack(['android', 'jetpack-compose', 'docker', 'truc'], { Kotlin: 90, Dockerfile: 1, Shell: 9 }),
+    ['Kotlin', 'Bash', 'Docker', 'Jetpack Compose']
+  );
+});
+
+test('README : premier vrai paragraphe et images utiles', () => {
+  const md = [
+    '<p align="center"><img src="docs/logo.png"></p>',
+    '# Mon projet',
+    '[![CI](https://img.shields.io/badge/ci-ok-green)](https://x) ![build](https://github.com/a/b/actions/workflows/ci.yml/badge.svg)',
+    '[Site](https://x.fr) · [Installer](#install) · [English](README.en.md)',
+    '> [!NOTE]\n> Une note qui ne décrit pas le projet du tout.',
+    'Mon projet **range** tes [photos](https://x.fr) et tes vidéos, sur ton propre serveur.',
+    '```\nnpm install\n```',
+    '![Capture](./docs/screen.webp "Écran") <img src="https://cdn.x.fr/a.png" width=200>',
+    '![logo](logo.svg) ![](https://github.com/a/b/blob/main/shot.jpg)'
+  ].join('\n\n');
+  assert.equal(readmeSummary(md), 'Mon projet range tes photos et tes vidéos, sur ton propre serveur.');
+  assert.equal(readmeSummary(md, 'Mon projet range tes photos et tes vidéos, sur ton propre serveur.'), '');
+  assert.deepEqual(readmeImages(md, { rawBase: 'https://raw.githubusercontent.com/a/b/main/' }), [
+    'https://raw.githubusercontent.com/a/b/main/docs/screen.webp',
+    'https://raw.githubusercontent.com/a/b/main/shot.jpg',
+    'https://raw.githubusercontent.com/a/b/main/docs/logo.png',
+    'https://cdn.x.fr/a.png'
+  ]);
+  assert.equal(readmeSummary(undefined), '');
+  assert.deepEqual(readmeImages(null), []);
+});
+
+test('store : les anciennes étiquettes deviennent des plateformes', () => {
+  const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'folichon-migrate-'));
+  try {
+    const store = createStore(dir);
+    store.write({
+      projects: [
+        { name: 'A', tag: 'Android · iOS' },
+        { name: 'B', tag: 'Web', platforms: ['linux'] }
+      ]
+    });
+    const [a, b] = createStore(dir).read().projects;
+    assert.deepEqual(a.platforms, ['android', 'ios']);
+    assert.deepEqual(b.platforms, ['linux']);
+  } finally {
+    fs.rmSync(dir, { recursive: true, force: true });
+  }
 });

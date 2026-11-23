@@ -136,8 +136,9 @@ Pour construire l'image toi-même : clone le dépôt, `cp .env.example .env`, pu
 - **Listes** : ajoute, supprime et réordonne les éléments avec les flèches ↑ ↓.
 - **Images** : bouton « Envoyer une image » ou un lien `https://…`.
 - **Couleurs** : chaque grand projet a son propre jeu de couleurs.
-- **Importer depuis un dépôt** (section Projets) : colle un lien GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket, et un nouveau projet est pré-rempli d'après le dépôt public : nom, accroche, langages, plateformes, nombre d'étoiles, licence, liens du code et du site. Les GitLab et Gitea auto-hébergés marchent aussi. Complète-le, puis enregistre.
-- **Plateformes** : coche Android, iOS, Windows, Linux, Docker, Raspberry Pi, Home Assistant… (33 en tout) et elles s'affichent avec leur logo sur la carte du projet.
+- **Importer depuis un dépôt** (section Projets) : colle un lien GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket, et un nouveau projet est pré-rempli d'après le dépôt public : nom, accroche, description (début du README), technologies, plateformes, nombre d'étoiles, licence, liens du code et du site. Les GitLab et Gitea auto-hébergés marchent aussi. Choisis ensuite les images que tu veux parmi celles du README (et la carte d'aperçu de GitHub) : un clic la télécharge sur ton serveur.
+- **Plateformes** : Android, iPhone, Windows, Linux, macOS, Raspberry Pi et Web, affichées avec leur logo au-dessus du nom du projet.
+- **Technologies** : pastilles avec le logo de 140 technologies connues (Kotlin, React, Docker, PostgreSQL…) ; tout autre nom reste une pastille simple.
 - **Apparence** (sa propre section dans le menu de l'admin) : langue de la page (français ou anglais), couleur d'accent, 7 thèmes qui changent la mise en page et le style de la page publique ; le mode clair/sombre et la couleur d'accent restent les tiens. Une police pour les titres, une pour le texte : une fournie (Bricolage Grotesque, Inter, JetBrains Mono), une famille déjà installée sur les appareils (serif, arrondie, manuscrite…) ou ton propre fichier (WOFF2, WOFF, TTF ou OTF), servi par ton serveur. Vérifie que sa licence autorise l'usage sur un site.
 - **Accroche** : les mots entre astérisques prennent la couleur d'accent, par exemple `Je fabrique des *apps Android*`.
 - **Enregistrer** (ou Ctrl/Cmd + S) : la page publique est à jour immédiatement ; la version précédente est gardée dans `data/content.backup.json`. Si le contenu a changé ailleurs (autre onglet), l'enregistrement est refusé au lieu de l'écraser.
@@ -166,4 +167,4 @@ npm run check     # Prettier, ESLint et tests
 
 ## Licence
 
-[MIT](LICENSE). Les polices (Inter, Bricolage Grotesque, JetBrains Mono) sont sous licence SIL Open Font License : voir `public/fonts/` et `src/share-card/`. Les logos des plateformes viennent de [selfh.st/icons](https://selfh.st/icons/) (CC BY 4.0) : voir `public/img/platforms/LICENSE.txt` ; ce sont des marques de leurs propriétaires.
+[MIT](LICENSE). Les polices (Inter, Bricolage Grotesque, JetBrains Mono) sont sous licence SIL Open Font License : voir `public/fonts/` et `src/share-card/`. Les logos des plateformes viennent de [selfh.st/icons](https://selfh.st/icons/) (CC BY 4.0), ceux des technologies de [Simple Icons](https://simpleicons.org) (CC0) et de selfh.st : voir les fichiers `LICENSE.txt` de `public/img/platforms/` et `public/img/tech/` ; ce sont des marques de leurs propriétaires.

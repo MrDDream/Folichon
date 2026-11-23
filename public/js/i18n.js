@@ -5,8 +5,33 @@
 const EN = {
   // Import d'un dépôt et plateformes des grands projets
   'Importer depuis un dépôt': 'Import from a repository',
-  'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, l’accroche, les langages, les plateformes et les liens sont remplis d’après le dépôt public ; rien n’est enregistré avant « Enregistrer ».':
-    'GitHub, GitLab, Codeberg, Gitea, Forgejo or Bitbucket. The name, tagline, languages, platforms and links are filled in from the public repository; nothing is saved until you click “Save”.',
+  'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, l’accroche, la description (début du README), les technologies, les plateformes et les liens sont remplis d’après le dépôt public, puis tu choisis les images. Rien n’est enregistré avant « Enregistrer ».':
+    'GitHub, GitLab, Codeberg, Gitea, Forgejo or Bitbucket. The name, tagline, description (start of the README), technologies, platforms and links are filled in from the public repository, then you pick the images. Nothing is saved until you click “Save”.',
+  'Lien du dépôt': 'Repository link',
+  'Projet « {name} » ajouté — choisis ses images dans « Visuels », puis enregistre':
+    'Project “{name}” added — pick its images under “Visuals”, then save',
+  'Affichées avec leur logo au-dessus du nom.': 'Shown with their logo above the name.',
+  'Entrée ou virgule pour ajouter. Les technologies connues ont leur logo ; les autres restent en pastille simple.':
+    'Enter or comma to add. Known technologies get their logo; others stay as a plain chip.',
+  'Ajouter une technologie…': 'Add a technology…',
+  'Vers la gauche': 'Move left',
+  'Vers la droite': 'Move right',
+  'Images du dépôt': 'Repository images',
+  'Écrans de téléphone : 2 images au plus. Navigateur et grande image : la première seulement.':
+    'Phone screens: 2 images at most. Browser and wide image: the first one only.',
+  'Renseigne le lien « Voir le code » pour proposer les images du dépôt.':
+    'Fill in the “View code” link to get the repository images.',
+  'Charger les images du dépôt': 'Load the repository images',
+  'Aucune image trouvée dans ce dépôt.': 'No image found in this repository.',
+  'Téléchargement de l’image…': 'Downloading the image…',
+  'Image ajoutée — pense à enregistrer': 'Image added — remember to save',
+  'Image impossible à ajouter : {message}': 'Could not add the image: {message}',
+  "Ce n'est pas une image PNG, JPG, WebP, GIF ou AVIF.": 'This is not a PNG, JPG, WebP, GIF or AVIF image.',
+  "Impossible de télécharger l'image.": 'Could not download the image.',
+  'Fichier trop lourd.': 'File too large.',
+  'Le site limite les requêtes : réessaie dans un instant.':
+    'The site is rate-limiting requests: try again in a moment.',
+  'Adresse invalide.': 'Invalid address.',
   Importer: 'Import',
   'Lecture du dépôt…': 'Reading the repository…',
   'Projet « {name} » ajouté d’après le dépôt — complète-le puis enregistre':
@@ -16,7 +41,6 @@ const EN = {
   '{n} étoiles sur {site}': '{n} stars on {site}',
   'Licence {license}': '{license} license',
   Plateformes: 'Platforms',
-  'Affichées avec leur logo sous l’étiquette.': 'Shown with their logo under the label.',
   'Colle le lien du dépôt.': 'Paste the repository link.',
   'Seuls les liens https sont acceptés.': 'Only https links are accepted.',
   'Ce lien ne ressemble pas à une adresse de dépôt.': 'This link does not look like a repository address.',
@@ -30,7 +54,6 @@ const EN = {
   'Impossible de joindre le site du dépôt.': 'Could not reach the repository site.',
   'Le site du dépôt ne répond pas.': 'The repository site is not responding.',
   'Trop de redirections.': 'Too many redirects.',
-  'Réponse trop grande.': 'Response too large.',
   'Réponse illisible.': 'Unreadable response.',
   // Barre du haut, menu, page de connexion
   'Folichon · administration': 'Folichon · admin',

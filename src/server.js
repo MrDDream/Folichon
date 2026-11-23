@@ -12,7 +12,7 @@ import { createImageSizer, localFile } from './images.js';
 import { CARD_HEIGHT, CARD_WIDTH, photoData, renderCard } from './share-card.js';
 import * as totp from './totp.js';
 import { updateInfo } from './version.js';
-import { fetchRepo, RepoError } from './repo.js';
+import { downloadImage, fetchRepo, RepoError } from './repo.js';
 import { createZip, readZip, ZipError } from './zip.js';
 import * as helpers from './helpers.js';
 
@@ -420,7 +420,9 @@ admin.get('/', (req, res) => {
     socialTypes: helpers.socialTypes,
     iconNames: helpers.iconNames,
     fontPresets: helpers.fontPresets,
-    platforms: helpers.platforms
+    platforms: helpers.platforms,
+    techs: helpers.techs.map(({ id, name }) => ({ id, name })),
+    techIndex: helpers.techIndex
   });
 });
 
@@ -518,6 +520,30 @@ admin.post('/api/repo', requireLogin, sameOrigin, requireAjax, express.json({ li
     res.status(400).json({ error: err.message });
   }
 });
+
+// Image d'un dépôt choisie dans l'admin : téléchargée puis vérifiée comme un envoi
+// (PNG, JPG, WebP, GIF ou AVIF d'après son contenu), et rangée dans uploads/.
+admin.post(
+  '/api/repo-image',
+  requireLogin,
+  sameOrigin,
+  requireAjax,
+  express.json({ limit: '4kb' }),
+  async (req, res) => {
+    let data;
+    try {
+      data = await downloadImage(req.body?.url, { allowPrivate: REPO_IMPORT_ALLOW_PRIVATE });
+    } catch (err) {
+      if (!(err instanceof RepoError)) throw err;
+      return res.status(400).json({ error: err.message });
+    }
+    const type = IMAGE_TYPES.find((t) => bufferMatchesType(data.subarray(0, 16), t));
+    if (!type) return res.status(400).json({ error: "Ce n'est pas une image PNG, JPG, WebP, GIF ou AVIF." });
+    const name = `${Date.now().toString(36)}-${crypto.randomBytes(6).toString('hex')}${UPLOAD_TYPES[type].ext}`;
+    await fs.promises.writeFile(path.join(UPLOAD_DIR, name), data);
+    res.json({ url: `/uploads/${name}` });
+  }
+);
 
 // Le contenu vient de l'admin (modifications pas encore enregistrées comprises).
 admin.post('/api/backup', requireLogin, sameOrigin, requireAjax, express.json({ limit: '2mb' }), (req, res) => {

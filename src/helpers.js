@@ -324,52 +324,237 @@ export function icon(name, size = 24) {
 
 export const iconNames = Object.keys(icons);
 
-// Plateformes d'un grand projet (Android, iOS, Docker…), affichées avec leur logo.
-// Les logos viennent de selfh.st/icons (CC BY 4.0) et sont servis par Folichon lui-même
-// (public/img/platforms) : la page ne contacte aucun autre site. Ils sont posés sur une
-// pastille blanche, lisible quel que soit le thème ou le mode sombre.
+// Plateformes d'un grand projet, affichées avec leur logo à la place de l'étiquette.
+// Logos de selfh.st/icons (CC BY 4.0), servis par Folichon lui-même (public/img/platforms) :
+// la page ne contacte aucun autre site. Ils sont posés sur une pastille blanche, lisible
+// quel que soit le thème ou le mode sombre.
 export const platforms = [
   ['android', 'Android'],
-  ['ios', 'iOS'],
-  ['macos', 'macOS'],
+  ['ios', 'iPhone'],
   ['windows', 'Windows'],
   ['linux', 'Linux'],
-  ['web', 'Web'],
-  ['docker', 'Docker'],
-  ['kubernetes', 'Kubernetes'],
+  ['macos', 'macOS'],
   ['raspberry-pi', 'Raspberry Pi'],
-  ['home-assistant', 'Home Assistant'],
-  ['esphome', 'ESPHome'],
-  ['arduino', 'Arduino'],
-  ['chrome', 'Chrome'],
-  ['firefox', 'Firefox'],
-  ['edge', 'Edge'],
-  ['safari', 'Safari'],
-  ['google-play', 'Google Play'],
-  ['app-store', 'App Store'],
-  ['f-droid', 'F-Droid'],
-  ['steam', 'Steam'],
-  ['steam-deck', 'Steam Deck'],
-  ['playstation', 'PlayStation'],
-  ['xbox', 'Xbox'],
-  ['switch', 'Nintendo Switch'],
-  ['proxmox', 'Proxmox'],
-  ['unraid', 'Unraid'],
-  ['truenas', 'TrueNAS'],
-  ['ubuntu', 'Ubuntu'],
-  ['debian', 'Debian'],
-  ['arch', 'Arch Linux'],
-  ['fedora', 'Fedora'],
-  ['freebsd', 'FreeBSD'],
-  ['nixos', 'NixOS']
+  ['web', 'Web']
 ].map(([id, name]) => ({ id, name }));
 
-// Plateformes connues d'un projet, dans l'ordre choisi, sans doublon.
+// Plateformes connues d'un projet, dans l'ordre de la liste, sans doublon.
 export function projectPlatforms(ids) {
-  const seen = new Set();
-  return list(ids)
-    .filter((id) => typeof id === 'string' && !seen.has(id) && seen.add(id))
-    .map((id) => platforms.find((p) => p.id === id))
-    .filter(Boolean)
-    .map((p) => ({ ...p, icon: `/assets/img/platforms/${p.id}.svg` }));
+  const chosen = new Set(list(ids));
+  return platforms.filter((p) => chosen.has(p.id)).map((p) => ({ ...p, icon: `/assets/img/platforms/${p.id}.svg` }));
 }
+
+// Anciennes étiquettes (« Android · iOS ») → plateformes, pour les contenus d'avant 0.5.0.
+const TAG_WORDS = {
+  android: 'android',
+  ios: 'ios',
+  iphone: 'ios',
+  ipad: 'ios',
+  windows: 'windows',
+  linux: 'linux',
+  macos: 'macos',
+  mac: 'macos',
+  osx: 'macos',
+  raspberry: 'raspberry-pi',
+  raspberrypi: 'raspberry-pi',
+  web: 'web',
+  pwa: 'web',
+  navigateur: 'web',
+  browser: 'web'
+};
+export function platformsFromTag(tag) {
+  const words = text(tag)
+    .toLowerCase()
+    .split(/[^a-z0-9]+/)
+    .filter(Boolean);
+  const found = new Set(words.map((w) => TAG_WORDS[w]).filter(Boolean));
+  return platforms.map((p) => p.id).filter((id) => found.has(id));
+}
+
+// Technologies avec un logo (public/img/tech) : Simple Icons (CC0), et selfh.st/icons
+// (CC BY 4.0) pour Java, AWS, OpenAI et VS Code. [id, nom affiché, autres noms].
+// Une technologie inconnue s'affiche quand même, en pastille sans logo.
+export const techs = [
+  ['javascript', 'JavaScript', 'js'],
+  ['typescript', 'TypeScript', 'ts'],
+  ['nodejs', 'Node.js', 'node'],
+  ['python', 'Python', 'py'],
+  ['kotlin', 'Kotlin'],
+  ['java', 'Java', 'openjdk'],
+  ['swift', 'Swift', 'swiftui'],
+  ['go', 'Go', 'golang'],
+  ['rust', 'Rust'],
+  ['php', 'PHP'],
+  ['ruby', 'Ruby'],
+  ['c', 'C'],
+  ['cpp', 'C++', 'cpp'],
+  ['dart', 'Dart'],
+  ['flutter', 'Flutter'],
+  ['lua', 'Lua'],
+  ['bash', 'Bash', 'shell,gnubash,sh,zsh'],
+  ['html', 'HTML', 'html5'],
+  ['css', 'CSS', 'css3'],
+  ['sass', 'Sass', 'scss'],
+  ['react', 'React', 'reactjs,reactnative'],
+  ['vue', 'Vue.js', 'vue,vuejs'],
+  ['svelte', 'Svelte', 'sveltekit'],
+  ['angular', 'Angular'],
+  ['nextjs', 'Next.js', 'next'],
+  ['nuxt', 'Nuxt', 'nuxtjs'],
+  ['astro', 'Astro'],
+  ['tailwind', 'Tailwind CSS', 'tailwind'],
+  ['bootstrap', 'Bootstrap'],
+  ['jquery', 'jQuery'],
+  ['vite', 'Vite'],
+  ['express', 'Express', 'expressjs'],
+  ['django', 'Django'],
+  ['flask', 'Flask'],
+  ['fastapi', 'FastAPI'],
+  ['laravel', 'Laravel'],
+  ['symfony', 'Symfony'],
+  ['spring', 'Spring', 'springboot'],
+  ['rails', 'Ruby on Rails', 'rails'],
+  ['dotnet', '.NET', 'dotnet,net,aspnet,aspnetcore'],
+  ['compose', 'Jetpack Compose', 'compose'],
+  ['android', 'Android'],
+  ['electron', 'Electron'],
+  ['tauri', 'Tauri'],
+  ['qt', 'Qt'],
+  ['godot', 'Godot', 'godotengine,gdscript'],
+  ['postgresql', 'PostgreSQL', 'postgres'],
+  ['mysql', 'MySQL'],
+  ['mariadb', 'MariaDB'],
+  ['sqlite', 'SQLite'],
+  ['mongodb', 'MongoDB', 'mongo'],
+  ['redis', 'Redis'],
+  ['supabase', 'Supabase'],
+  ['firebase', 'Firebase'],
+  ['graphql', 'GraphQL'],
+  ['docker', 'Docker', 'dockercompose'],
+  ['kubernetes', 'Kubernetes', 'k8s'],
+  ['nginx', 'NGINX'],
+  ['traefik', 'Traefik', 'traefikproxy'],
+  ['caddy', 'Caddy'],
+  ['git', 'Git'],
+  ['github-actions', 'GitHub Actions'],
+  ['linux', 'Linux'],
+  ['raspberry-pi', 'Raspberry Pi', 'raspberrypi,raspberry'],
+  ['arduino', 'Arduino'],
+  ['esp32', 'ESP32', 'espressif,esp8266'],
+  ['esphome', 'ESPHome'],
+  ['home-assistant', 'Home Assistant', 'homeassistant,hacs'],
+  ['mqtt', 'MQTT'],
+  ['cloudflare', 'Cloudflare'],
+  ['aws', 'AWS', 'amazonwebservices'],
+  ['gcp', 'Google Cloud', 'googlecloud'],
+  ['vercel', 'Vercel'],
+  ['netlify', 'Netlify'],
+  ['terraform', 'Terraform'],
+  ['ansible', 'Ansible'],
+  ['prometheus', 'Prometheus'],
+  ['grafana', 'Grafana'],
+  ['elasticsearch', 'Elasticsearch'],
+  ['rabbitmq', 'RabbitMQ'],
+  ['kafka', 'Kafka', 'apachekafka'],
+  ['openai', 'OpenAI', 'chatgpt'],
+  ['ollama', 'Ollama'],
+  ['pytorch', 'PyTorch'],
+  ['tensorflow', 'TensorFlow'],
+  ['jupyter', 'Jupyter', 'jupyternotebook'],
+  ['n8n', 'n8n'],
+  ['wordpress', 'WordPress'],
+  ['strapi', 'Strapi'],
+  ['prisma', 'Prisma'],
+  ['socketio', 'Socket.IO', 'socketio'],
+  ['ejs', 'EJS'],
+  ['figma', 'Figma'],
+  ['deno', 'Deno'],
+  ['bun', 'Bun'],
+  ['gradle', 'Gradle'],
+  ['zig', 'Zig'],
+  ['elixir', 'Elixir'],
+  ['scala', 'Scala'],
+  ['haskell', 'Haskell'],
+  ['r', 'R'],
+  ['perl', 'Perl'],
+  ['threejs', 'Three.js', 'three'],
+  ['wasm', 'WebAssembly', 'wasm'],
+  ['redux', 'Redux'],
+  ['nestjs', 'NestJS', 'nest'],
+  ['ionic', 'Ionic'],
+  ['capacitor', 'Capacitor'],
+  ['expo', 'Expo'],
+  ['pandas', 'pandas'],
+  ['numpy', 'NumPy'],
+  ['opencv', 'OpenCV'],
+  ['platformio', 'PlatformIO'],
+  ['micropython', 'MicroPython'],
+  ['openapi', 'OpenAPI', 'swagger'],
+  ['jest', 'Jest'],
+  ['vitest', 'Vitest'],
+  ['eslint', 'ESLint'],
+  ['webpack', 'Webpack'],
+  ['npm', 'npm'],
+  ['pnpm', 'pnpm'],
+  ['hugo', 'Hugo'],
+  ['markdown', 'Markdown', 'md'],
+  ['stripe', 'Stripe'],
+  ['openstreetmap', 'OpenStreetMap', 'osm'],
+  ['leaflet', 'Leaflet'],
+  ['chartjs', 'Chart.js'],
+  ['d3', 'D3.js', 'd3js'],
+  ['pwa', 'PWA'],
+  ['proxmox', 'Proxmox'],
+  ['gitea', 'Gitea'],
+  ['forgejo', 'Forgejo'],
+  ['minio', 'MinIO'],
+  ['keycloak', 'Keycloak'],
+  ['jwt', 'JWT', 'jsonwebtokens,jsonwebtoken'],
+  ['ktor', 'Ktor'],
+  ['material', 'Material Design', 'materialdesign,material3,materialyou'],
+  ['android-studio', 'Android Studio', 'androidstudio'],
+  ['xcode', 'Xcode'],
+  ['vscode', 'VS Code', 'visualstudiocode']
+].map(([id, name, aliases = '']) => ({ id, name, aliases: aliases ? aliases.split(',') : [] }));
+
+// « Node.js », « nodejs », « NODE » → même clé. Les + et # comptent (C++, C#).
+export const techKey = (value) =>
+  text(value)
+    .toLowerCase()
+    .replace(/\+/g, 'plus')
+    .replace(/#/g, 'sharp')
+    .replace(/[^a-z0-9]/g, '');
+const TECH_INDEX = new Map();
+for (const t of techs) {
+  for (const k of [t.id, t.name, ...t.aliases].map(techKey)) if (k && !TECH_INDEX.has(k)) TECH_INDEX.set(k, t);
+}
+// Clés propres à quelques noms (langages GitHub, abréviations) qui ne se devinent pas.
+for (const [k, id] of [
+  ['cplusplus', 'cpp'],
+  ['shell', 'bash'],
+  ['vue', 'vue'],
+  ['jupyternotebook', 'jupyter']
+]) {
+  TECH_INDEX.set(
+    k,
+    techs.find((t) => t.id === id)
+  );
+}
+
+export function techFor(name) {
+  return TECH_INDEX.get(techKey(name)) || null;
+}
+
+// Pastilles « Technologies » d'un projet : nom saisi, logo si la technologie est connue.
+export function projectStack(names) {
+  return list(names)
+    .map((n) => text(n).trim())
+    .filter(Boolean)
+    .map((name) => {
+      const tech = techFor(name);
+      return { name, icon: tech ? `/assets/img/tech/${tech.id}.svg` : '' };
+    });
+}
+
+// Clés de recherche pour l'admin : clé → id (même correspondance que techFor).
+export const techIndex = Object.fromEntries([...TECH_INDEX].map(([k, t]) => [k, t.id]));

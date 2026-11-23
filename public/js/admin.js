@@ -10,6 +10,8 @@ const SOCIAL_TYPES = body.dataset.socialTypes.split(',');
 const ICONS = body.dataset.iconNames.split(',');
 const FONT_PRESETS = JSON.parse(body.dataset.fontPresets || '[]');
 const PLATFORMS = JSON.parse(body.dataset.platforms || '[]');
+const TECHS = JSON.parse(body.dataset.techs || '[]');
+const TECH_INDEX = JSON.parse(body.dataset.techIndex || '{}');
 const $status = document.getElementById('status');
 const $save = document.getElementById('save');
 const $editor = document.getElementById('editor');
@@ -29,6 +31,8 @@ const themes = (label, o = {}) => ({ kind: 'themes', label, ...o });
 const font = (label, o = {}) => ({ kind: 'font', label, ...o });
 const platforms = (label, o = {}) => ({ kind: 'platforms', label, ...o });
 const repoImport = (label, o = {}) => ({ kind: 'repoImport', label, ...o });
+const techList = (label, o = {}) => ({ kind: 'techs', label, ...o });
+const repoImages = (label, o = {}) => ({ kind: 'repoImages', label, ...o });
 
 // Thèmes de la page publique (même liste que siteThemes dans src/helpers.js).
 // Les vignettes de l'admin sont dessinées en CSS (.tp-<id> dans admin.css).
@@ -178,7 +182,7 @@ const SECTIONS = [
       [
         'projects',
         repoImport('Importer depuis un dépôt', {
-          help: 'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, l’accroche, les langages, les plateformes et les liens sont remplis d’après le dépôt public ; rien n’est enregistré avant « Enregistrer ».'
+          help: 'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, l’accroche, la description (début du README), les technologies, les plateformes et les liens sont remplis d’après le dépôt public, puis tu choisis les images. Rien n’est enregistré avant « Enregistrer ».'
         })
       ],
       [
@@ -187,12 +191,16 @@ const SECTIONS = [
           'Grands projets (un par ligne)',
           group('', [
             ['name', text('Nom')],
-            ['tag', text('Étiquette')],
-            ['platforms', platforms('Plateformes', { help: 'Affichées avec leur logo sous l’étiquette.' })],
+            ['platforms', platforms('Plateformes', { help: 'Affichées avec leur logo au-dessus du nom.' })],
             ['tagline', text('Accroche')],
             ['description', area('Description')],
             ['bullets', lines('Points forts (un par ligne)')],
-            ['stack', lines('Technologies en pastilles (une par ligne, optionnel)')],
+            [
+              'stack',
+              techList('Technologies', {
+                help: 'Entrée ou virgule pour ajouter. Les technologies connues ont leur logo ; les autres restent en pastille simple.'
+              })
+            ],
             ['codeUrl', text('Lien « Voir le code »')],
             ['siteUrl', text('Lien « Site du projet »')],
             [
@@ -222,7 +230,8 @@ const SECTIONS = [
                     add: () => '',
                     title: (it, i) => t('Image {n}', { n: i + 1 })
                   })
-                ]
+                ],
+                ['images', repoImages('Images du dépôt')]
               ])
             ],
             ['theme', theme]
@@ -479,7 +488,6 @@ const SECTIONS = [
 function newProject() {
   return {
     name: t('Nouveau projet'),
-    tag: '',
     platforms: [],
     tagline: '',
     description: '',
@@ -759,6 +767,10 @@ function renderNode(sch, parent, key, path) {
       return renderPlatforms(sch, parent, key);
     case 'repoImport':
       return renderRepoImport(sch, parent, key);
+    case 'techs':
+      return renderTechs(sch, parent, key);
+    case 'repoImages':
+      return renderRepoImages(sch, parent, key, path);
     default:
       return el('p', {}, t('Champ inconnu : {kind}', { kind: sch.kind }));
   }
@@ -985,8 +997,9 @@ function projectFromRepo(repo, link) {
     name: repo.name || project.name,
     platforms: repo.platforms,
     tagline: repo.description,
+    description: repo.readme || '',
     bullets,
-    stack: repo.languages,
+    stack: repo.stack,
     codeUrl: repo.url || link,
     siteUrl: repo.homepage,
     media: {
@@ -998,19 +1011,37 @@ function projectFromRepo(repo, link) {
   };
 }
 
+// Images trouvées dans chaque dépôt (lien du code → adresses), et celles déjà choisies
+// (adresse d'origine → fichier /uploads), gardées pendant la visite.
+const repoImageCache = new Map();
+const pickedImages = new Map();
+
+async function loadRepo(link) {
+  const repo = await api('/repo', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: link })
+  });
+  repoImageCache.set(link, repo.images || []);
+  if (repo.url) repoImageCache.set(repo.url, repo.images || []);
+  return repo;
+}
+
 // Champ « lien du dépôt » au-dessus de la liste des projets : ajoute un projet pré-rempli.
 function renderRepoImport(sch, parent, key) {
   const input = el('input', {
-    type: 'url',
+    type: 'text',
+    inputmode: 'url',
     placeholder: 'https://github.com/moi/mon-projet',
     spellcheck: 'false',
-    autocomplete: 'off'
+    autocomplete: 'off',
+    'aria-label': t('Lien du dépôt')
   });
-  const button = el('button', { type: 'submit', class: 'btn btn-small btn-primary' }, t('Importer'));
+  const button = el('button', { type: 'submit', class: 'btn btn-primary' }, t('Importer'));
   const form = el(
     'form',
     {
-      class: 'repo-import',
+      class: 'repo-import-row',
       onsubmit: async (e) => {
         e.preventDefault();
         const link = input.value.trim();
@@ -1018,20 +1049,20 @@ function renderRepoImport(sch, parent, key) {
         button.disabled = true;
         setStatus('Lecture du dépôt…');
         try {
-          const repo = await api('/repo', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ url: link })
-          });
+          const repo = await loadRepo(link);
           if (!Array.isArray(parent[key])) parent[key] = [];
           parent[key].push(projectFromRepo(repo, link));
           const index = parent[key].length - 1;
           openItems.add(`${key}[${index}]`);
           markDirty();
           render();
-          setStatus('Projet « {name} » ajouté d’après le dépôt — complète-le puis enregistre', 'warn', {
-            name: parent[key][index].name
-          });
+          setStatus(
+            repo.images?.length
+              ? 'Projet « {name} » ajouté — choisis ses images dans « Visuels », puis enregistre'
+              : 'Projet « {name} » ajouté d’après le dépôt — complète-le puis enregistre',
+            'warn',
+            { name: parent[key][index].name }
+          );
           document.querySelectorAll('#s-projets > fieldset.list > details.list-item')[index]?.scrollIntoView({
             behavior: 'smooth',
             block: 'start'
@@ -1042,16 +1073,247 @@ function renderRepoImport(sch, parent, key) {
         }
       }
     },
-    el('div', { class: 'repo-import-row' }, input, button)
+    input,
+    button
   );
-  const fid = (input.id = id());
   return el(
     'fieldset',
-    {},
-    el('legend', {}, el('label', { for: fid }, t(sch.label))),
+    { class: 'repo-import' },
+    el('legend', {}, t(sch.label)),
     sch.help ? el('small', { class: 'help' }, t(sch.help)) : null,
     form
   );
+}
+
+// Même correspondance nom → logo que techFor() côté serveur (src/helpers.js).
+const techKey = (value) =>
+  String(value ?? '')
+    .toLowerCase()
+    .replace(/\+/g, 'plus')
+    .replace(/#/g, 'sharp')
+    .replace(/[^a-z0-9]/g, '');
+const techLogo = (name) => {
+  const id = TECH_INDEX[techKey(name)];
+  return id ? `/assets/img/tech/${id}.svg` : '';
+};
+
+// Technologies : pastilles (avec logo si connu), × pour retirer, ← → pour déplacer,
+// et un champ avec suggestions pour en ajouter.
+let techListId = 0;
+function renderTechs(sch, parent, key) {
+  if (!Array.isArray(parent[key])) {
+    parent[key] = String(parent[key] ?? '')
+      .split(/[,\n·]/)
+      .map((v) => v.trim())
+      .filter(Boolean);
+  }
+  const arr = parent[key];
+  const pills = el('div', { class: 'tech-pills' });
+  const datalist = el(
+    'datalist',
+    { id: `techs-${++techListId}` },
+    TECHS.map((tech) => el('option', { value: tech.name }))
+  );
+  const input = el('input', {
+    type: 'text',
+    list: datalist.id,
+    placeholder: t('Ajouter une technologie…'),
+    autocomplete: 'off'
+  });
+  const add = () => {
+    const values = input.value
+      .split(',')
+      .map((v) => v.trim())
+      .filter(Boolean);
+    input.value = '';
+    let changed = false;
+    for (const v of values) {
+      if (arr.some((x) => techKey(x) === techKey(v))) continue;
+      arr.push(v);
+      changed = true;
+    }
+    if (changed) {
+      markDirty();
+      draw();
+    }
+  };
+  input.addEventListener('keydown', (e) => {
+    if (e.key === 'Enter' || e.key === ',') {
+      e.preventDefault();
+      add();
+    } else if (e.key === 'Backspace' && !input.value && arr.length) {
+      arr.pop();
+      markDirty();
+      draw();
+    }
+  });
+  // Choix dans la liste de suggestions : ajouté tout de suite.
+  input.addEventListener('input', (e) => {
+    if (e.inputType === 'insertReplacementText') add();
+  });
+  input.addEventListener('blur', add);
+  function draw() {
+    pills.replaceChildren(
+      ...arr.map((name, i) => {
+        const logo = techLogo(name);
+        const move = (d) => {
+          const j = i + d;
+          if (j < 0 || j >= arr.length) return;
+          [arr[i], arr[j]] = [arr[j], arr[i]];
+          markDirty();
+          draw();
+        };
+        const btn = (label, text, onclick, disabled) =>
+          el(
+            'button',
+            { type: 'button', class: 'tech-btn', title: t(label), 'aria-label': t(label), disabled, onclick },
+            text
+          );
+        return el(
+          'span',
+          { class: 'tech-pill' },
+          logo ? el('img', { src: logo, alt: '', width: 18, height: 18 }) : null,
+          el('span', {}, name),
+          btn('Vers la gauche', '‹', () => move(-1), i === 0),
+          btn('Vers la droite', '›', () => move(1), i === arr.length - 1),
+          btn(
+            'Retirer',
+            '×',
+            () => {
+              arr.splice(i, 1);
+              markDirty();
+              draw();
+            },
+            false
+          )
+        );
+      })
+    );
+  }
+  draw();
+  const fid = (input.id = id());
+  return el(
+    'div',
+    { class: 'field tech-field' },
+    el('label', { for: fid }, t(sch.label)),
+    pills,
+    input,
+    datalist,
+    sch.help ? el('small', { class: 'help' }, t(sch.help)) : null
+  );
+}
+
+// Images du dépôt du projet (README, aperçu GitHub, avatar) : un clic les télécharge sur
+// le serveur et les ajoute aux images du projet ; un second clic les retire.
+function renderRepoImages(sch, parent, key, path) {
+  const index = Number(/^projects\[(\d+)\]/.exec(path)?.[1]);
+  const project = content.projects?.[index];
+  const link = String(project?.codeUrl || '').trim();
+  const box = el('div', { class: 'repo-images' });
+  const field = el(
+    'div',
+    { class: 'field' },
+    el('span', { class: 'field-label' }, t(sch.label)),
+    box,
+    el(
+      'small',
+      { class: 'help' },
+      t('Écrans de téléphone : 2 images au plus. Navigateur et grande image : la première seulement.')
+    )
+  );
+  if (!link) {
+    box.append(
+      el('small', { class: 'help' }, t('Renseigne le lien « Voir le code » pour proposer les images du dépôt.'))
+    );
+    return field;
+  }
+  const load = el(
+    'button',
+    {
+      type: 'button',
+      class: 'btn btn-small',
+      onclick: async () => {
+        const previous = lastStatus;
+        load.disabled = true;
+        setStatus('Lecture du dépôt…');
+        try {
+          await loadRepo(link);
+          setStatus(...previous);
+          draw();
+        } catch (err) {
+          load.disabled = false;
+          setStatus('Import du dépôt impossible : {message}', 'error', { message: t(err.message) });
+        }
+      }
+    },
+    t('Charger les images du dépôt')
+  );
+  function draw() {
+    const images = repoImageCache.get(link);
+    if (!images) return box.replaceChildren(load);
+    if (!images.length)
+      return box.replaceChildren(el('small', { class: 'help' }, t('Aucune image trouvée dans ce dépôt.')));
+    if (!Array.isArray(parent[key])) parent[key] = [];
+    const list = parent[key];
+    box.replaceChildren(
+      el(
+        'div',
+        { class: 'repo-image-grid' },
+        images.map((src) => {
+          const uploaded = pickedImages.get(src);
+          const chosen = Boolean(uploaded && list.includes(uploaded));
+          const button = el(
+            'button',
+            {
+              type: 'button',
+              class: 'repo-image',
+              'aria-pressed': String(chosen),
+              title: src,
+              onclick: async () => {
+                if (chosen) {
+                  list.splice(list.indexOf(uploaded), 1);
+                  markDirty();
+                  return render();
+                }
+                button.disabled = true;
+                setStatus('Téléchargement de l’image…');
+                try {
+                  const { url } = await api('/repo-image', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ url: src })
+                  });
+                  pickedImages.set(src, url);
+                  // Remplace une image vide laissée par « + Ajouter une image », sinon ajoute.
+                  const empty = list.indexOf('');
+                  if (empty >= 0) list[empty] = url;
+                  else list.push(url);
+                  markDirty();
+                  render();
+                  setStatus('Image ajoutée — pense à enregistrer', 'warn');
+                } catch (err) {
+                  button.disabled = false;
+                  setStatus('Image impossible à ajouter : {message}', 'error', { message: t(err.message) });
+                }
+              }
+            },
+            el('img', {
+              src,
+              alt: '',
+              loading: 'lazy',
+              referrerpolicy: 'no-referrer',
+              // Une adresse qui n'est pas une image (ou plus en ligne) disparaît de la grille.
+              onerror: () => button.remove()
+            }),
+            chosen ? el('span', { class: 'repo-image-check', 'aria-hidden': 'true' }, '✓') : null
+          );
+          return button;
+        })
+      )
+    );
+  }
+  draw();
+  return field;
 }
 
 function renderImage(sch, parent, key) {

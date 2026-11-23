@@ -8,6 +8,7 @@
 import dns from 'node:dns';
 import https from 'node:https';
 import net from 'node:net';
+import { techFor } from './helpers.js';
 import { VERSION } from './version.js';
 
 export class RepoError extends Error {}
@@ -71,9 +72,16 @@ class HttpError extends Error {
   }
 }
 
-function getJson(url, { allowPrivate = false, redirects = 2 } = {}) {
+// Lit une adresse https (redirections suivies, chacune vérifiée de la même façon) et
+// renvoie le corps de la réponse, sans dépasser maxBytes.
+function getRaw(url, { allowPrivate = false, redirects = 3, maxBytes = MAX_BYTES, accept = 'application/json' } = {}) {
   return new Promise((resolve, reject) => {
-    const target = new URL(url);
+    let target;
+    try {
+      target = new URL(url);
+    } catch {
+      return reject(new RepoError('Adresse invalide.'));
+    }
     if (target.protocol !== 'https:') return reject(new RepoError('Seuls les liens https sont acceptés.'));
     // Une adresse IP écrite telle quelle ne passe pas par la résolution DNS : vérifiée ici.
     const literal = target.hostname.replace(/^\[|\]$/g, '');
@@ -83,7 +91,7 @@ function getJson(url, { allowPrivate = false, redirects = 2 } = {}) {
     const req = https.get(
       target,
       {
-        headers: { Accept: 'application/json', 'User-Agent': `Folichon/${VERSION}` },
+        headers: { Accept: accept, 'User-Agent': `Folichon/${VERSION}` },
         lookup: allowPrivate ? undefined : publicLookup,
         timeout: TIMEOUT_MS
       },
@@ -93,35 +101,61 @@ function getJson(url, { allowPrivate = false, redirects = 2 } = {}) {
           res.resume();
           if (redirects <= 0) return reject(new RepoError('Trop de redirections.'));
           const next = new URL(headers.location, target);
-          return getJson(next.href, { allowPrivate, redirects: redirects - 1 }).then(resolve, reject);
+          return getRaw(next.href, { allowPrivate, redirects: redirects - 1, maxBytes, accept }).then(resolve, reject);
         }
         if (statusCode !== 200) {
           res.resume();
           return reject(new HttpError(statusCode));
         }
+        if (Number(headers['content-length']) > maxBytes) {
+          res.resume();
+          return reject(new RepoError('Fichier trop lourd.'));
+        }
         const chunks = [];
         let size = 0;
         res.on('data', (chunk) => {
           size += chunk.length;
-          if (size > MAX_BYTES) {
-            req.destroy(new RepoError('Réponse trop grande.'));
+          if (size > maxBytes) {
+            req.destroy(new RepoError('Fichier trop lourd.'));
             return;
           }
           chunks.push(chunk);
         });
-        res.on('end', () => {
-          try {
-            resolve(JSON.parse(Buffer.concat(chunks).toString('utf8')));
-          } catch {
-            reject(new RepoError('Réponse illisible.'));
-          }
-        });
+        res.on('end', () => resolve(Buffer.concat(chunks)));
         res.on('error', reject);
       }
     );
     req.on('timeout', () => req.destroy(new RepoError('Le site du dépôt ne répond pas.')));
     req.on('error', reject);
   });
+}
+
+async function getJson(url, opts = {}) {
+  const body = await getRaw(url, opts);
+  try {
+    return JSON.parse(body.toString('utf8'));
+  } catch {
+    throw new RepoError('Réponse illisible.');
+  }
+}
+
+const getText = async (url, opts = {}) => (await getRaw(url, { ...opts, accept: 'text/plain, */*' })).toString('utf8');
+
+// Image choisie dans l'admin parmi celles du dépôt : téléchargée par le serveur (15 Mo au
+// plus) pour être servie depuis /uploads, comme une image envoyée à la main.
+export async function downloadImage(url, { allowPrivate = false } = {}) {
+  try {
+    return await getRaw(String(url ?? ''), {
+      allowPrivate,
+      maxBytes: 15 * 1024 * 1024,
+      accept: 'image/avif,image/webp,image/png,image/jpeg,image/gif,*/*;q=0.5'
+    });
+  } catch (err) {
+    if (err instanceof RepoError) throw err;
+    if (err?.status === 429) throw new RepoError('Le site limite les requêtes : réessaie dans un instant.');
+    if (err instanceof HttpError) throw new RepoError(`Image introuvable (${err.status}).`);
+    throw new RepoError("Impossible de télécharger l'image.");
+  }
 }
 
 // « https://github.com/moi/projet/tree/main » → { host: 'github.com', path: ['moi', 'projet'] }.
@@ -189,67 +223,184 @@ function topLanguages(map) {
 
 // Plateformes devinées d'après les sujets (topics) du dépôt et ses langages.
 const PLATFORM_TOPICS = {
-  android: ['android', 'android-app', 'android-application', 'jetpack-compose', 'wear-os'],
+  android: ['android', 'android-app', 'android-application', 'jetpack-compose', 'wear-os', 'f-droid', 'fdroid'],
   ios: ['ios', 'ios-app', 'iphone', 'ipad', 'swiftui'],
-  macos: ['macos', 'osx', 'mac', 'macos-app'],
   windows: ['windows', 'win32', 'windows-app', 'winui', 'wpf'],
   linux: ['linux', 'linux-app', 'gtk', 'flatpak'],
-  web: ['web', 'webapp', 'web-app', 'pwa', 'website'],
-  docker: ['docker', 'docker-compose', 'docker-image', 'dockerfile', 'container'],
-  kubernetes: ['kubernetes', 'k8s', 'helm', 'helm-chart'],
+  macos: ['macos', 'osx', 'mac', 'macos-app'],
   'raspberry-pi': ['raspberry-pi', 'raspberrypi', 'raspberry'],
-  'home-assistant': ['home-assistant', 'homeassistant', 'hacs', 'hacs-integration'],
-  esphome: ['esphome'],
-  arduino: ['arduino', 'esp32', 'esp8266'],
-  chrome: ['chrome-extension', 'chrome', 'chromium-extension'],
-  firefox: ['firefox-extension', 'firefox-addon', 'firefox'],
-  edge: ['edge-extension'],
-  safari: ['safari-extension'],
-  'google-play': ['google-play'],
-  'app-store': ['app-store', 'appstore'],
-  'f-droid': ['f-droid', 'fdroid'],
-  steam: ['steam'],
-  'steam-deck': ['steam-deck', 'steamdeck'],
-  playstation: ['playstation', 'ps4', 'ps5'],
-  xbox: ['xbox'],
-  switch: ['nintendo-switch', 'switch-homebrew'],
-  proxmox: ['proxmox', 'proxmox-ve'],
-  unraid: ['unraid'],
-  truenas: ['truenas'],
-  ubuntu: ['ubuntu'],
-  debian: ['debian'],
-  arch: ['archlinux', 'arch-linux', 'aur'],
-  fedora: ['fedora'],
-  freebsd: ['freebsd'],
-  nixos: ['nixos', 'nix-flake']
+  web: ['web', 'webapp', 'web-app', 'pwa', 'website', 'browser-extension', 'chrome-extension', 'firefox-addon']
 };
+const WEB_LANGUAGES = new Set(['Vue', 'Svelte', 'Astro']);
+const PLATFORM_TECHS = new Set(['android', 'linux', 'raspberry-pi']);
 
 export function guessPlatforms(topics = [], languages = {}) {
   const set = new Set(topics.map((t) => String(t).toLowerCase()));
   const found = Object.keys(PLATFORM_TOPICS).filter((id) => PLATFORM_TOPICS[id].some((t) => set.has(t)));
-  if (languages && typeof languages === 'object' && 'Dockerfile' in languages && !found.includes('docker')) {
-    found.push('docker');
-  }
+  const langs = languages && typeof languages === 'object' ? Object.keys(languages) : [];
+  if (!found.includes('web') && langs.some((l) => WEB_LANGUAGES.has(l))) found.push('web');
   return found;
 }
+
+// Technologies : langages principaux, puis sujets du dépôt qui sont des technologies
+// connues (avec un logo), sous leur nom habituel. Huit au plus.
+export function guessStack(topics = [], languages = {}) {
+  const names = [...topLanguages(languages)];
+  if (languages && typeof languages === 'object' && 'Dockerfile' in languages) names.push('Docker');
+  // Les sujets qui sont déjà des plateformes (android, linux…) n'y sont pas répétés.
+  for (const topic of topics) {
+    const tech = techFor(topic);
+    if (tech && !PLATFORM_TECHS.has(tech.id)) names.push(topic);
+  }
+  const seen = new Set();
+  const stack = [];
+  for (const name of names) {
+    const tech = techFor(name);
+    const label = tech ? tech.name : name;
+    const key = tech ? tech.id : label.toLowerCase();
+    if (seen.has(key)) continue;
+    seen.add(key);
+    stack.push(label);
+  }
+  return stack.slice(0, 8);
+}
+
+// ---------- README : description et images ----------
+
+// Texte brut d'un morceau de Markdown/HTML : liens gardés comme texte, images retirées.
+function plain(md) {
+  return md
+    .replace(/<!--[\s\S]*?-->/g, ' ')
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, ' ')
+    .replace(/\[([^\]]*)\]\([^)]*\)/g, '$1')
+    .replace(/\[([^\]]*)\]\[[^\]]*\]/g, '$1')
+    .replace(/<[^>]+>/g, ' ')
+    .replace(/&nbsp;/g, ' ')
+    .replace(/&amp;/g, '&')
+    .replace(/&lt;/g, '<')
+    .replace(/&gt;/g, '>')
+    .replace(/&quot;/g, '"')
+    .replace(/&#39;/g, "'")
+    .replace(/&#(\d+);/g, (all, n) => String.fromCodePoint(Number(n)))
+    .replace(/(\*\*|__|`)/g, '')
+    .replace(/(^|\s)[*_]([^*_\n]+)[*_](?=\s|[.,;:!?)]|$)/g, '$1$2')
+    .replace(/^\s*>\s?/gm, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+// Coupe un texte trop long à la fin d'une phrase.
+function clip(text, max) {
+  if (text.length <= max) return text;
+  const cut = text.slice(0, max);
+  const end = Math.max(cut.lastIndexOf('. '), cut.lastIndexOf('! '), cut.lastIndexOf('? '));
+  return end > max / 3 ? cut.slice(0, end + 1) : `${cut.replace(/\s+\S*$/, '')}…`;
+}
+
+// Premier vrai paragraphe du README (pas un titre, des badges, un tableau ou du code),
+// complété du suivant s'il est court. Différent de la description du dépôt.
+export function readmeSummary(md, description = '') {
+  if (typeof md !== 'string' || !md) return '';
+  const body = md
+    .replace(/\r\n?/g, '\n')
+    .replace(/^(```|~~~)[\s\S]*?^\1.*$/gm, '\n')
+    .replace(/<!--[\s\S]*?-->/g, '\n')
+    .replace(/<(table|pre|code|picture|details|svg)\b[\s\S]*?<\/\1>/gi, '\n');
+  const known = plain(description).toLowerCase();
+  const paragraphs = [];
+  for (const block of body.split(/\n\s*\n/)) {
+    const raw = block.trim();
+    if (!raw || /^(#|\||[-*+] |\d+\. |={3,}|-{3,}|>\s*\[!)/.test(raw) || /^\s*[^\n]*\n(=+|-+)\s*$/.test(raw)) continue;
+    const text = plain(raw);
+    // Une ligne de liens (« Site · Installer · English ») n'est pas une description.
+    const outsideLinks = plain(raw.replace(/\[[^\]]*\]\([^)]*\)/g, ' ').replace(/<a\b[\s\S]*?<\/a>/gi, ' '));
+    if (outsideLinks.replace(/[^\p{L}]/gu, '').length < 20) continue;
+    if (text.length < 40 || !/[a-zà-ÿ]{3,}.*\s.*[a-zà-ÿ]{3,}/i.test(text)) continue;
+    if (text.toLowerCase() === known) continue;
+    paragraphs.push(text);
+    if (paragraphs.join(' ').length >= 160 || paragraphs.length === 2) break;
+  }
+  return clip(paragraphs.join('\n\n'), 600);
+}
+
+const BADGE_HOSTS =
+  /(^|\.)(shields\.io|badgen\.net|badge\.fury\.io|codecov\.io|coveralls\.io|travis-ci\.(org|com)|circleci\.com|app\.codacy\.com|sonarcloud\.io|api\.netlify\.com|deepscan\.io|snyk\.io|bestpractices\.coreinfrastructure\.org|repobeats\.axiom\.co|star-history\.com|api\.star-history\.com|contrib\.rocks|ossinsight\.io|next\.ossinsight\.io|ko-fi\.com|buymeacoffee\.com|liberapay\.com|hosted\.weblate\.org|translate\.codeberg\.org|img\.buymeacoffee\.com|stars\.medv\.io|komarev\.com|visitor-badge\.laobi\.icu|github-readme-stats\.vercel\.app|f-droid\.org|play\.google\.com|developer\.apple\.com|tools\.applemediaservices\.com)$/i;
+
+// Images du README, en adresses complètes. Les chemins relatifs sont résolus depuis le
+// dossier du README brut ; les badges et les SVG (refusés à l'envoi) sont écartés.
+export function readmeImages(md, { rawBase = '', siteBase = '' } = {}) {
+  if (typeof md !== 'string') return [];
+  const found = [];
+  for (const m of md.matchAll(/!\[[^\]]*\]\(\s*<?([^\s)>]+)>?(?:\s+["'][^"']*["'])?\s*\)/g)) found.push(m[1]);
+  for (const m of md.matchAll(/<img\b[^>]*?\bsrc\s*=\s*["']([^"']+)["']/gi)) found.push(m[1]);
+  for (const m of md.matchAll(/^\s*\[[^\]]+\]:\s*<?(\S+?\.(?:png|jpe?g|webp|gif|avif))>?/gim)) found.push(m[1]);
+  const out = [];
+  for (const src of found) {
+    let url;
+    try {
+      if (src.startsWith('/') && !src.startsWith('//') && siteBase) url = new URL(siteBase + src);
+      else url = new URL(src, rawBase || undefined);
+    } catch {
+      continue;
+    }
+    if (url.protocol === 'http:') url.protocol = 'https:';
+    if (url.protocol !== 'https:') continue;
+    // github.com/moi/projet/blob/main/x.png → le fichier lui-même.
+    const blob = /^\/([^/]+)\/([^/]+)\/(?:blob|raw)\/(.+)$/.exec(url.pathname);
+    if (url.hostname === 'github.com' && blob) {
+      url = new URL(`https://raw.githubusercontent.com/${blob[1]}/${blob[2]}/${blob[3]}`);
+    }
+    const file = url.pathname.toLowerCase();
+    if (BADGE_HOSTS.test(url.hostname) || /\.svg$/.test(file) || /\/badges?\b|badge\.(svg|png)$/.test(file)) continue;
+    if (/[?&](style|logo|label)=/.test(url.search)) continue;
+    const href = url.href;
+    if (!out.includes(href)) out.push(href);
+    if (out.length >= 24) break;
+  }
+  return out;
+}
+
+const dirOf = (url) => (url ? url.replace(/[^/]*$/, '') : '');
+const fromBase64 = (value) => (typeof value === 'string' ? Buffer.from(value, 'base64').toString('utf8') : '');
+
+// ---------- Sites de dépôts ----------
 
 const str = (v) => (typeof v === 'string' ? v.trim() : '');
 const num = (v) => (Number.isFinite(v) ? v : null);
 const strings = (v) => (Array.isArray(v) ? v.filter((t) => typeof t === 'string') : []);
 
-function result({ provider, name, description, url, homepage, topics, languages, stars, license }) {
+function result({
+  provider,
+  name,
+  description,
+  url,
+  homepage,
+  topics,
+  languages,
+  stars,
+  license,
+  readme,
+  extraImages
+}) {
   const langs = languages || {};
+  const tags = strings(topics).slice(0, 30);
+  const md = readme?.text || '';
+  const images = readmeImages(md, { rawBase: readme?.rawBase, siteBase: readme?.siteBase });
+  for (const img of extraImages || []) if (!images.includes(img)) images.push(img);
   return {
     provider,
     name: str(name),
     description: str(description),
+    readme: readmeSummary(md, str(description)),
     url: str(url),
     homepage: /^https?:\/\//i.test(str(homepage)) ? str(homepage) : '',
-    topics: strings(topics).slice(0, 20),
+    topics: tags,
     languages: topLanguages(langs),
-    platforms: guessPlatforms(strings(topics), langs),
+    stack: guessStack(tags, langs),
+    platforms: guessPlatforms(tags, langs),
     stars: num(stars),
-    license: str(license)
+    license: str(license),
+    images
   };
 }
 
@@ -257,7 +408,12 @@ const optional = (promise) => promise.catch(() => null);
 
 async function fromGitHub([owner, repo], opts) {
   const base = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
-  const [r, languages] = await Promise.all([getJson(base, opts), optional(getJson(`${base}/languages`, opts))]);
+  const [r, languages, readme] = await Promise.all([
+    getJson(base, opts),
+    optional(getJson(`${base}/languages`, opts)),
+    optional(getJson(`${base}/readme`, opts))
+  ]);
+  const fullName = str(r.full_name) || `${owner}/${repo}`;
   return result({
     provider: 'GitHub',
     name: r.name,
@@ -267,7 +423,14 @@ async function fromGitHub([owner, repo], opts) {
     topics: r.topics,
     languages,
     stars: r.stargazers_count,
-    license: r.license?.spdx_id && r.license.spdx_id !== 'NOASSERTION' ? r.license.spdx_id : ''
+    license: r.license?.spdx_id && r.license.spdx_id !== 'NOASSERTION' ? r.license.spdx_id : '',
+    readme: readme && {
+      text: fromBase64(readme.content),
+      rawBase: dirOf(str(readme.download_url)),
+      siteBase: `https://github.com/${fullName}/raw/HEAD`
+    },
+    // Carte d'aperçu que GitHub dessine pour chaque dépôt (ou l'image choisie par l'auteur).
+    extraImages: [`https://opengraph.githubassets.com/1/${fullName}`]
   });
 }
 
@@ -278,6 +441,8 @@ async function fromGitLab(host, parts, opts) {
     optional(getJson(`${base}/languages`, opts))
   ]);
   if (!r || typeof r !== 'object' || !('path_with_namespace' in r)) throw new HttpError(404);
+  const readmeUrl = str(r.readme_url).replace('/-/blob/', '/-/raw/');
+  const text = readmeUrl.startsWith(`https://${host}/`) ? await optional(getText(readmeUrl, opts)) : null;
   return result({
     provider: 'GitLab',
     name: r.name,
@@ -287,16 +452,20 @@ async function fromGitLab(host, parts, opts) {
     topics: r.topics || r.tag_list,
     languages,
     stars: r.star_count,
-    license: r.license?.nickname || r.license?.name || ''
+    license: r.license?.nickname || r.license?.name || '',
+    // Dans un README GitLab, « /uploads/… » désigne les fichiers joints au projet.
+    readme: text && { text, rawBase: dirOf(readmeUrl), siteBase: str(r.web_url) },
+    extraImages: /^https:\/\//.test(str(r.avatar_url)) ? [str(r.avatar_url)] : []
   });
 }
 
 async function fromGitea(host, [owner, repo], opts) {
   const base = `https://${host}/api/v1/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
-  const [r, languages, topics] = await Promise.all([
+  const [r, languages, topics, readme] = await Promise.all([
     getJson(base, opts),
     optional(getJson(`${base}/languages`, opts)),
-    optional(getJson(`${base}/topics`, opts))
+    optional(getJson(`${base}/topics`, opts)),
+    optional(getJson(`${base}/contents/README.md`, opts))
   ]);
   if (!r || typeof r !== 'object' || !('full_name' in r)) throw new HttpError(404);
   return result({
@@ -308,15 +477,17 @@ async function fromGitea(host, [owner, repo], opts) {
     topics: topics?.topics || r.topics,
     languages,
     stars: r.stars_count,
-    license: strings(r.licenses)[0] || ''
+    license: strings(r.licenses)[0] || '',
+    readme: readme && { text: fromBase64(readme.content), rawBase: dirOf(str(readme.download_url)) },
+    extraImages: /^https:\/\//.test(str(r.avatar_url)) ? [str(r.avatar_url)] : []
   });
 }
 
 async function fromBitbucket([owner, repo], opts) {
-  const r = await getJson(
-    `https://api.bitbucket.org/2.0/repositories/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`,
-    opts
-  );
+  const path = `${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
+  const r = await getJson(`https://api.bitbucket.org/2.0/repositories/${path}`, opts);
+  const rawBase = `https://bitbucket.org/${path}/raw/HEAD/`;
+  const text = await optional(getText(`${rawBase}README.md`, opts));
   return result({
     provider: 'Bitbucket',
     name: r.name,
@@ -326,7 +497,8 @@ async function fromBitbucket([owner, repo], opts) {
     topics: [],
     languages: r.language ? { [r.language.replace(/^./, (c) => c.toUpperCase())]: 1 } : {},
     stars: null,
-    license: ''
+    license: '',
+    readme: text && { text, rawBase }
   });
 }
 

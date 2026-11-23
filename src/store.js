@@ -3,6 +3,7 @@ import crypto from 'node:crypto';
 import fs from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { platformsFromTag } from './helpers.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_FILE = path.join(here, 'default-content.json');
@@ -15,6 +16,19 @@ function clean(value) {
     return Object.fromEntries(Object.entries(value).map(([key, item]) => [key, clean(item)]));
   }
   return value;
+}
+
+// Avant 0.5.0, les plateformes d'un grand projet s'écrivaient dans son étiquette
+// (« Android · iOS ») : elles deviennent des plateformes avec logo. L'étiquette est gardée
+// dans le fichier, mais n'est plus affichée.
+function migrate(content) {
+  if (!Array.isArray(content?.projects)) return content;
+  for (const project of content.projects) {
+    if (project && typeof project === 'object' && !Array.isArray(project.platforms) && project.tag) {
+      project.platforms = platformsFromTag(project.tag);
+    }
+  }
+  return content;
 }
 
 function revisionOf(content) {
@@ -50,7 +64,7 @@ export function createStore(dataDir) {
     const mtime = mtimeOf();
     if (cache && mtime === cacheMtime) return cache;
     try {
-      cache = clean(JSON.parse(fs.readFileSync(file, 'utf8')));
+      cache = migrate(clean(JSON.parse(fs.readFileSync(file, 'utf8'))));
     } catch (err) {
       console.error(`[contenu] ${file} illisible (${err.message}), contenu par défaut utilisé.`);
       cache = JSON.parse(fs.readFileSync(DEFAULT_FILE, 'utf8'));

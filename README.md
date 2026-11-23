@@ -136,8 +136,9 @@ To build the image yourself: clone the repository, `cp .env.example .env`, then 
 - **Lists**: add, remove and reorder items with the ↑ ↓ arrows.
 - **Images**: "Envoyer une image" button, or an `https://…` link.
 - **Colours**: each project has its own colour set.
-- **Import from a repository** (Projects section): paste a GitHub, GitLab, Codeberg, Gitea, Forgejo or Bitbucket link and a new project is filled in from the public repository: name, tagline, languages, platforms, star count, licence, code and site links. Self-hosted GitLab and Gitea work too. Complete it, then save.
-- **Platforms**: tick Android, iOS, Windows, Linux, Docker, Raspberry Pi, Home Assistant… (33 in all) and they show with their logo on the project card.
+- **Import from a repository** (Projects section): paste a GitHub, GitLab, Codeberg, Gitea, Forgejo or Bitbucket link and a new project is filled in from the public repository: name, tagline, description (start of the README), technologies, platforms, star count, licence, code and site links. Self-hosted GitLab and Gitea work too. Then pick the images you want among the ones in the README (plus GitHub's preview card): one click downloads it to your server.
+- **Platforms**: Android, iPhone, Windows, Linux, macOS, Raspberry Pi and Web, shown with their logo above the project name.
+- **Technologies**: chips with the logo of 140 known technologies (Kotlin, React, Docker, PostgreSQL…); any other name stays a plain chip.
 - **Appearance** (its own section in the admin menu): page language (French or English), accent colour, 7 themes that change the layout and style of the public page; light/dark mode and the accent colour stay yours. One font for headings, one for body text: a bundled one (Bricolage Grotesque, Inter, JetBrains Mono), a family already installed on devices (serif, rounded, handwritten…), or your own file (WOFF2, WOFF, TTF or OTF), served by your server. Check that its licence allows use on a website.
 - **Headline**: words between asterisks take the accent colour, for example `I build *Android apps*`.
 - **Save** (or Ctrl/Cmd + S): the public page updates at once; the previous version is kept in `data/content.backup.json`. If the content changed elsewhere (another tab), saving is refused instead of overwriting it.
@@ -166,4 +167,4 @@ npm run check     # Prettier, ESLint and tests
 
 ## License
 
-[MIT](LICENSE). The fonts (Inter, Bricolage Grotesque, JetBrains Mono) are under the SIL Open Font License: see `public/fonts/` and `src/share-card/`. The platform logos come from [selfh.st/icons](https://selfh.st/icons/) (CC BY 4.0): see `public/img/platforms/LICENSE.txt`; they are trademarks of their owners.
+[MIT](LICENSE). The fonts (Inter, Bricolage Grotesque, JetBrains Mono) are under the SIL Open Font License: see `public/fonts/` and `src/share-card/`. The platform logos come from [selfh.st/icons](https://selfh.st/icons/) (CC BY 4.0) and the technology logos from [Simple Icons](https://simpleicons.org) (CC0) and selfh.st: see the `LICENSE.txt` files in `public/img/platforms/` and `public/img/tech/`; they are trademarks of their owners.

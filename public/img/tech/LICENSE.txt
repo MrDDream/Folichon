@@ -1,0 +1,12 @@
+Technology logos.
+
+Most files come from Simple Icons — https://simpleicons.org — https://github.com/simple-icons/simple-icons
+(version 16.38.1), released under CC0 1.0 (public domain). Each file was given its brand colour
+from Simple Icons' data as a fill.
+
+java.svg, aws.svg, openai.svg and vscode.svg come from selfh.st/icons — https://selfh.st/icons/ —
+licensed under Creative Commons Attribution 4.0 International (CC BY 4.0):
+https://creativecommons.org/licenses/by/4.0/
+
+The logos themselves are trademarks of their respective owners, used here only to say which
+technology a project uses.

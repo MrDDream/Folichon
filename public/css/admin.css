@@ -141,7 +141,7 @@ fieldset fieldset { background: var(--card-2); padding: 16px; }
 
 /* Champs */
 .field { display: flex; flex-direction: column; gap: 6px; min-width: 0; }
-.field > label { font-size: 13px; font-weight: 600; color: var(--muted); }
+.field > label, .field-label { font-size: 13px; font-weight: 600; color: var(--muted); }
 .field.check { flex-direction: row; align-items: center; gap: 8px; }
 .field.check label { color: var(--ink); font-weight: 500; }
 .help { color: var(--muted); font-size: 12px; }
@@ -150,6 +150,29 @@ fieldset fieldset { background: var(--card-2); padding: 16px; }
 .theme-field .help { margin-top: -8px; }
 .repo-import-row { display: flex; gap: 8px; }
 .repo-import-row input { flex: 1; min-width: 0; }
+.repo-import-row .btn { flex: none; min-height: 42px; }
+.tech-pills { display: flex; flex-wrap: wrap; gap: 6px; }
+.tech-pills:empty { display: none; }
+.tech-pill { display: inline-flex; align-items: center; gap: 6px; padding: 3px 4px 3px 4px; border: 1px solid var(--line); border-radius: 999px; background: var(--card-2); color: var(--ink); font-size: 13px; font-weight: 500; }
+.tech-pill > span { padding: 0 2px 0 4px; }
+.tech-pill:not(:has(img)) > span { padding-left: 8px; }
+.tech-pill img { width: 22px; height: 22px; padding: 3px; border-radius: 50%; background: #FFFFFF; box-shadow: 0 0 0 1px rgba(21, 19, 31, .1); }
+.tech-btn { width: 22px; height: 22px; display: inline-grid; place-items: center; padding: 0; border: 0; border-radius: 50%; background: transparent; color: var(--muted); font: 600 15px/1 inherit; cursor: pointer; }
+.tech-btn:hover:not(:disabled) { background: var(--card); color: var(--ink); }
+.tech-btn:disabled { opacity: .3; cursor: default; }
+/* Sur ordinateur, les flèches n'apparaissent qu'au survol ; sur écran tactile, toujours. */
+@media (hover: hover) {
+  .tech-pill .tech-btn:not(:last-child) { display: none; }
+  .tech-pill:hover .tech-btn, .tech-pill:focus-within .tech-btn { display: inline-grid; }
+}
+.repo-images { display: flex; flex-direction: column; gap: 8px; align-items: flex-start; }
+.repo-image-grid { width: 100%; display: grid; grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); gap: 8px; }
+.repo-image { position: relative; aspect-ratio: 4 / 3; padding: 0; border: 1px solid var(--line); border-radius: 10px; background: var(--card-2); overflow: hidden; cursor: pointer; }
+.repo-image:hover { border-color: var(--line-strong); }
+.repo-image img { width: 100%; height: 100%; object-fit: contain; display: block; }
+.repo-image[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
+.repo-image:disabled { opacity: .5; cursor: progress; }
+.repo-image-check { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 13px; font-weight: 700; }
 .platform-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
 .platform-option { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); cursor: pointer; font-size: 14px; color: var(--ink); }
 .platform-option:hover { border-color: var(--line-strong); }
@@ -226,7 +249,7 @@ fieldset fieldset { background: var(--card-2); padding: 16px; }
 .font-field .image-field { margin-top: 4px; }
 .theme-name { padding: 0 4px; font-weight: 700; font-size: 14px; }
 .theme-desc { padding: 0 4px; color: var(--muted); font-size: 12px; line-height: 1.35; }
-input[type="text"], input[type="password"], textarea, select { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--field); color: var(--ink); font: inherit; transition: border-color .15s, box-shadow .15s; }
+input[type="text"], input[type="url"], input[type="password"], textarea, select { width: 100%; min-height: 42px; padding: 9px 12px; border: 1px solid var(--line); border-radius: 10px; background: var(--field); color: var(--ink); font: inherit; transition: border-color .15s, box-shadow .15s; }
 input[type="text"]:hover, textarea:hover, select:hover { border-color: var(--line-strong); }
 textarea { resize: vertical; line-height: 1.5; }
 input:focus, textarea:focus, select:focus { border-color: var(--accent); outline: none; box-shadow: 0 0 0 4px color-mix(in srgb, var(--accent) 18%, transparent); }

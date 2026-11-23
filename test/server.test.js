@@ -143,6 +143,15 @@ test('import de dépôt : les liens invalides ou vers le réseau local sont refu
     assert.equal(res.status, 400, url);
     assert.ok((await res.json()).error, url);
   }
+  // Image d'un dépôt : même verrou sur le réseau local.
+  for (const url of ['https://127.0.0.1/image.png', 'http://exemple.fr/image.png', '']) {
+    const res = await fetch(`${BASE + ADMIN}/api/repo-image`, {
+      method: 'POST',
+      headers: { cookie, 'Content-Type': 'application/json', 'X-Requested-With': 'folichon-admin' },
+      body: JSON.stringify({ url })
+    });
+    assert.equal(res.status, 400, url);
+  }
   const anonymous = await fetch(`${BASE + ADMIN}/api/repo`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json', 'X-Requested-With': 'folichon-admin' },
