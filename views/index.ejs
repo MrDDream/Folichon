@@ -154,7 +154,8 @@
         <% const plats = h.projectPlatforms(pr.platforms); if (plats.length) { %>
         <ul class="platforms" aria-label="<%= L.platforms %>"><% plats.forEach(p => { %><li class="platform"><img src="<%= p.icon %>" width="16" height="16" alt="" loading="lazy" decoding="async"><%= p.name %></li><% }) %></ul>
         <% } %>
-        <h3 class="display"><%= pr.name %></h3>
+        <% const logo = h.safeUrl(pr.logo); %>
+        <h3 class="display<%= logo ? ' has-logo' : '' %>"><% if (logo) { %><img class="project-logo" src="<%= logo %>" width="64" height="64" alt="" decoding="async"><% } %><%= pr.name %></h3>
         <% if (pr.tagline) { %><p class="tagline"><%= pr.tagline %></p><% } %>
         <% if (pr.description) { %><p class="desc"><%= pr.description %></p><% } %>
         <% if (h.list(pr.bullets).filter(Boolean).length) { %>

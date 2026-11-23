@@ -380,13 +380,15 @@ function result({
   stars,
   license,
   readme,
-  extraImages
+  extraImages,
+  logos
 }) {
   const langs = languages || {};
   const tags = strings(topics).slice(0, 30);
   const md = readme?.text || '';
   const images = readmeImages(md, { rawBase: readme?.rawBase, siteBase: readme?.siteBase });
   for (const img of extraImages || []) if (!images.includes(img)) images.push(img);
+  const logo = repoLogos(images, logos);
   return {
     provider,
     name: str(name),
@@ -400,8 +402,36 @@ function result({
     platforms: guessPlatforms(tags, langs),
     stars: num(stars),
     license: str(license),
-    images
+    images,
+    logo: logo.best,
+    logos: logo.all
   };
+}
+
+const LOGO_FILE = /(^|[/_.-])(logo|icon|favicon|brand|mark)[^/]*$/i;
+const httpsUrl = (value, base) => {
+  try {
+    const url = new URL(str(value), base);
+    return url.protocol === 'https:' ? url.href : '';
+  } catch {
+    return '';
+  }
+};
+
+// Logos possibles d'un dépôt, du plus probable au moins probable : une image du README
+// nommée « logo »/« icon », l'avatar du projet, celui de l'organisation. L'avatar d'une
+// personne est proposé sans être choisi d'office (c'est sa photo, pas le logo du projet).
+export function repoLogos(images = [], { project = [], owner = [], person = [] } = {}) {
+  const fromReadme = images.filter((src) => {
+    try {
+      return LOGO_FILE.test(new URL(src).pathname);
+    } catch {
+      return false;
+    }
+  });
+  const strong = [...fromReadme, ...project, ...owner].filter(Boolean);
+  const all = [...new Set([...strong, ...person.filter(Boolean)])].slice(0, 8);
+  return { best: strong[0] || '', all };
 }
 
 const optional = (promise) => promise.catch(() => null);
@@ -430,7 +460,10 @@ async function fromGitHub([owner, repo], opts) {
       siteBase: `https://github.com/${fullName}/raw/HEAD`
     },
     // Carte d'aperçu que GitHub dessine pour chaque dépôt (ou l'image choisie par l'auteur).
-    extraImages: [`https://opengraph.githubassets.com/1/${fullName}`]
+    extraImages: [`https://opengraph.githubassets.com/1/${fullName}`],
+    logos: {
+      [r.owner?.type === 'Organization' ? 'owner' : 'person']: [httpsUrl(r.owner?.avatar_url)]
+    }
   });
 }
 
@@ -455,7 +488,11 @@ async function fromGitLab(host, parts, opts) {
     license: r.license?.nickname || r.license?.name || '',
     // Dans un README GitLab, « /uploads/… » désigne les fichiers joints au projet.
     readme: text && { text, rawBase: dirOf(readmeUrl), siteBase: str(r.web_url) },
-    extraImages: /^https:\/\//.test(str(r.avatar_url)) ? [str(r.avatar_url)] : []
+    extraImages: /^https:\/\//.test(str(r.avatar_url)) ? [str(r.avatar_url)] : [],
+    logos: {
+      project: [httpsUrl(r.avatar_url, `https://${host}`)],
+      [r.namespace?.kind === 'group' ? 'owner' : 'person']: [httpsUrl(r.namespace?.avatar_url, `https://${host}`)]
+    }
   });
 }
 
@@ -479,7 +516,9 @@ async function fromGitea(host, [owner, repo], opts) {
     stars: r.stars_count,
     license: strings(r.licenses)[0] || '',
     readme: readme && { text: fromBase64(readme.content), rawBase: dirOf(str(readme.download_url)) },
-    extraImages: /^https:\/\//.test(str(r.avatar_url)) ? [str(r.avatar_url)] : []
+    extraImages: /^https:\/\//.test(str(r.avatar_url)) ? [str(r.avatar_url)] : [],
+    // Gitea ne dit pas si le propriétaire est une organisation : son avatar reste une proposition.
+    logos: { project: [httpsUrl(r.avatar_url)], person: [httpsUrl(r.owner?.avatar_url)] }
   });
 }
 

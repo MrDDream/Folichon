@@ -15,6 +15,7 @@ import {
   parseRepoUrl,
   readmeImages,
   readmeSummary,
+  repoLogos,
   RepoError
 } from '../src/repo.js';
 import zlib from 'node:zlib';
@@ -362,4 +363,25 @@ test('store : les anciennes étiquettes deviennent des plateformes', () => {
   } finally {
     fs.rmSync(dir, { recursive: true, force: true });
   }
+});
+
+test('repoLogos : logo du README, avatar du projet ou de l’organisation, jamais une personne d’office', () => {
+  const images = [
+    'https://raw.githubusercontent.com/a/b/main/docs/screenshot.png',
+    'https://raw.githubusercontent.com/a/b/main/assets/app-logo.png',
+    'https://raw.githubusercontent.com/a/b/main/icon.webp'
+  ];
+  assert.deepEqual(repoLogos(images, { person: ['https://avatars.example/u/1'] }), {
+    best: images[1],
+    all: [images[1], images[2], 'https://avatars.example/u/1']
+  });
+  assert.deepEqual(
+    repoLogos([images[0]], { owner: ['https://avatars.example/o/2'] }).best,
+    'https://avatars.example/o/2'
+  );
+  assert.deepEqual(repoLogos([images[0]], { project: [''], person: ['https://avatars.example/u/1'] }), {
+    best: '',
+    all: ['https://avatars.example/u/1']
+  });
+  assert.deepEqual(repoLogos(), { best: '', all: [] });
 });

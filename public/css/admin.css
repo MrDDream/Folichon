@@ -172,6 +172,9 @@ fieldset fieldset { background: var(--card-2); padding: 16px; }
 .repo-image img { width: 100%; height: 100%; object-fit: contain; display: block; }
 .repo-image[aria-pressed="true"] { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent); }
 .repo-image:disabled { opacity: .5; cursor: progress; }
+.repo-logo-grid { grid-template-columns: repeat(auto-fill, minmax(72px, 1fr)); }
+.repo-logo-grid .repo-image { aspect-ratio: 1; background: #FFFFFF; }
+.repo-logo-grid .repo-image img { padding: 8px; }
 .repo-image-check { position: absolute; top: 6px; right: 6px; width: 22px; height: 22px; display: grid; place-items: center; border-radius: 50%; background: var(--accent); color: var(--accent-ink); font-size: 13px; font-weight: 700; }
 .platform-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); gap: 6px; }
 .platform-option { display: flex; align-items: center; gap: 8px; padding: 6px 10px 6px 6px; border: 1px solid var(--line); border-radius: 10px; background: var(--card); cursor: pointer; font-size: 14px; color: var(--ink); }

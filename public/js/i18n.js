@@ -5,8 +5,8 @@
 const EN = {
   // Import d'un dépôt et plateformes des grands projets
   'Importer depuis un dépôt': 'Import from a repository',
-  'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, l’accroche, la description (début du README), les technologies, les plateformes et les liens sont remplis d’après le dépôt public, puis tu choisis les images. Rien n’est enregistré avant « Enregistrer ».':
-    'GitHub, GitLab, Codeberg, Gitea, Forgejo or Bitbucket. The name, tagline, description (start of the README), technologies, platforms and links are filled in from the public repository, then you pick the images. Nothing is saved until you click “Save”.',
+  'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, le logo, l’accroche, la description (début du README), les technologies, les plateformes et les liens sont remplis d’après le dépôt public, puis tu choisis les images. Rien n’est enregistré avant « Enregistrer ».':
+    'GitHub, GitLab, Codeberg, Gitea, Forgejo or Bitbucket. The name, logo, tagline, description (start of the README), technologies, platforms and links are filled in from the public repository, then you pick the images. Nothing is saved until you click “Save”.',
   'Lien du dépôt': 'Repository link',
   'Projet « {name} » ajouté — choisis ses images dans « Visuels », puis enregistre':
     'Project “{name}” added — pick its images under “Visuals”, then save',
@@ -17,6 +17,16 @@ const EN = {
   'Vers la gauche': 'Move left',
   'Vers la droite': 'Move right',
   'Images du dépôt': 'Repository images',
+  Logo: 'Logo',
+  'Affiché devant le nom. Une image carrée (PNG, WebP…) de préférence.':
+    'Shown before the name. A square image (PNG, WebP…) works best.',
+  'Logos du dépôt': 'Repository logos',
+  'Renseigne le lien « Voir le code » pour proposer les logos du dépôt.':
+    'Fill in the “View code” link to get the repository logos.',
+  'Charger les logos du dépôt': 'Load the repository logos',
+  'Aucun logo trouvé dans ce dépôt.': 'No logo found in this repository.',
+  'Téléchargement du logo…': 'Downloading the logo…',
+  'Logo choisi — pense à enregistrer': 'Logo picked — remember to save',
   'Écrans de téléphone : 2 images au plus. Navigateur et grande image : la première seulement.':
     'Phone screens: 2 images at most. Browser and wide image: the first one only.',
   'Renseigne le lien « Voir le code » pour proposer les images du dépôt.':

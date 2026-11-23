@@ -182,7 +182,7 @@ const SECTIONS = [
       [
         'projects',
         repoImport('Importer depuis un dépôt', {
-          help: 'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, l’accroche, la description (début du README), les technologies, les plateformes et les liens sont remplis d’après le dépôt public, puis tu choisis les images. Rien n’est enregistré avant « Enregistrer ».'
+          help: 'GitHub, GitLab, Codeberg, Gitea, Forgejo ou Bitbucket. Le nom, le logo, l’accroche, la description (début du README), les technologies, les plateformes et les liens sont remplis d’après le dépôt public, puis tu choisis les images. Rien n’est enregistré avant « Enregistrer ».'
         })
       ],
       [
@@ -191,6 +191,14 @@ const SECTIONS = [
           'Grands projets (un par ligne)',
           group('', [
             ['name', text('Nom')],
+            [
+              'logo',
+              image('Logo', {
+                accept: 'image/*',
+                help: 'Affiché devant le nom. Une image carrée (PNG, WebP…) de préférence.'
+              })
+            ],
+            ['logo', repoImages('Logos du dépôt', { single: true })],
             ['platforms', platforms('Plateformes', { help: 'Affichées avec leur logo au-dessus du nom.' })],
             ['tagline', text('Accroche')],
             ['description', area('Description')],
@@ -488,6 +496,7 @@ const SECTIONS = [
 function newProject() {
   return {
     name: t('Nouveau projet'),
+    logo: '',
     platforms: [],
     tagline: '',
     description: '',
@@ -1022,9 +1031,22 @@ async function loadRepo(link) {
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({ url: link })
   });
-  repoImageCache.set(link, repo.images || []);
-  if (repo.url) repoImageCache.set(repo.url, repo.images || []);
+  const found = { images: repo.images || [], logos: repo.logos || [] };
+  repoImageCache.set(link, found);
+  if (repo.url) repoImageCache.set(repo.url, found);
   return repo;
+}
+
+// Copie une image du dépôt dans /uploads (une seule fois par adresse pendant la visite).
+async function uploadRepoImage(src) {
+  if (pickedImages.has(src)) return pickedImages.get(src);
+  const { url } = await api('/repo-image', {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ url: src })
+  });
+  pickedImages.set(src, url);
+  return url;
 }
 
 // Champ « lien du dépôt » au-dessus de la liste des projets : ajoute un projet pré-rempli.
@@ -1050,8 +1072,14 @@ function renderRepoImport(sch, parent, key) {
         setStatus('Lecture du dépôt…');
         try {
           const repo = await loadRepo(link);
+          const project = projectFromRepo(repo, link);
+          if (repo.logo) {
+            setStatus('Téléchargement du logo…');
+            // Sans logo, le projet est ajouté quand même : on pourra en choisir un ensuite.
+            project.logo = await uploadRepoImage(repo.logo).catch(() => '');
+          }
           if (!Array.isArray(parent[key])) parent[key] = [];
-          parent[key].push(projectFromRepo(repo, link));
+          parent[key].push(project);
           const index = parent[key].length - 1;
           openItems.add(`${key}[${index}]`);
           markDirty();
@@ -1209,21 +1237,32 @@ function renderRepoImages(sch, parent, key, path) {
   const index = Number(/^projects\[(\d+)\]/.exec(path)?.[1]);
   const project = content.projects?.[index];
   const link = String(project?.codeUrl || '').trim();
+  const single = Boolean(sch.single);
   const box = el('div', { class: 'repo-images' });
   const field = el(
     'div',
     { class: 'field' },
     el('span', { class: 'field-label' }, t(sch.label)),
     box,
-    el(
-      'small',
-      { class: 'help' },
-      t('Écrans de téléphone : 2 images au plus. Navigateur et grande image : la première seulement.')
-    )
+    single
+      ? null
+      : el(
+          'small',
+          { class: 'help' },
+          t('Écrans de téléphone : 2 images au plus. Navigateur et grande image : la première seulement.')
+        )
   );
   if (!link) {
     box.append(
-      el('small', { class: 'help' }, t('Renseigne le lien « Voir le code » pour proposer les images du dépôt.'))
+      el(
+        'small',
+        { class: 'help' },
+        t(
+          single
+            ? 'Renseigne le lien « Voir le code » pour proposer les logos du dépôt.'
+            : 'Renseigne le lien « Voir le code » pour proposer les images du dépôt.'
+        )
+      )
     );
     return field;
   }
@@ -1246,22 +1285,29 @@ function renderRepoImages(sch, parent, key, path) {
         }
       }
     },
-    t('Charger les images du dépôt')
+    t(single ? 'Charger les logos du dépôt' : 'Charger les images du dépôt')
   );
   function draw() {
-    const images = repoImageCache.get(link);
-    if (!images) return box.replaceChildren(load);
+    const found = repoImageCache.get(link);
+    if (!found) return box.replaceChildren(load);
+    const images = single ? found.logos : found.images;
     if (!images.length)
-      return box.replaceChildren(el('small', { class: 'help' }, t('Aucune image trouvée dans ce dépôt.')));
-    if (!Array.isArray(parent[key])) parent[key] = [];
-    const list = parent[key];
+      return box.replaceChildren(
+        el(
+          'small',
+          { class: 'help' },
+          t(single ? 'Aucun logo trouvé dans ce dépôt.' : 'Aucune image trouvée dans ce dépôt.')
+        )
+      );
+    if (!single && !Array.isArray(parent[key])) parent[key] = [];
+    const list = single ? null : parent[key];
     box.replaceChildren(
       el(
         'div',
-        { class: 'repo-image-grid' },
+        { class: `repo-image-grid${single ? ' repo-logo-grid' : ''}` },
         images.map((src) => {
           const uploaded = pickedImages.get(src);
-          const chosen = Boolean(uploaded && list.includes(uploaded));
+          const chosen = Boolean(uploaded && (single ? parent[key] === uploaded : list.includes(uploaded)));
           const button = el(
             'button',
             {
@@ -1271,26 +1317,28 @@ function renderRepoImages(sch, parent, key, path) {
               title: src,
               onclick: async () => {
                 if (chosen) {
-                  list.splice(list.indexOf(uploaded), 1);
+                  if (single) parent[key] = '';
+                  else list.splice(list.indexOf(uploaded), 1);
                   markDirty();
                   return render();
                 }
                 button.disabled = true;
                 setStatus('Téléchargement de l’image…');
                 try {
-                  const { url } = await api('/repo-image', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ url: src })
-                  });
-                  pickedImages.set(src, url);
-                  // Remplace une image vide laissée par « + Ajouter une image », sinon ajoute.
-                  const empty = list.indexOf('');
-                  if (empty >= 0) list[empty] = url;
-                  else list.push(url);
+                  const url = await uploadRepoImage(src);
+                  if (single) parent[key] = url;
+                  else {
+                    // Remplace une image vide laissée par « + Ajouter une image », sinon ajoute.
+                    const empty = list.indexOf('');
+                    if (empty >= 0) list[empty] = url;
+                    else list.push(url);
+                  }
                   markDirty();
                   render();
-                  setStatus('Image ajoutée — pense à enregistrer', 'warn');
+                  setStatus(
+                    single ? 'Logo choisi — pense à enregistrer' : 'Image ajoutée — pense à enregistrer',
+                    'warn'
+                  );
                 } catch (err) {
                   button.disabled = false;
                   setStatus('Image impossible à ajouter : {message}', 'error', { message: t(err.message) });
