@@ -193,12 +193,12 @@ const SECTIONS = [
             ['name', text('Nom')],
             [
               'logo',
-              image('Logo', {
+              repoImages('Logo', {
+                single: true,
                 accept: 'image/*',
                 help: 'Affiché devant le nom. Une image carrée (PNG, WebP…) de préférence.'
               })
             ],
-            ['logo', repoImages('Logos du dépôt', { single: true })],
             ['platforms', platforms('Plateformes', { help: 'Affichées avec leur logo au-dessus du nom.' })],
             ['tagline', text('Accroche')],
             ['description', area('Description')],
@@ -1233,37 +1233,37 @@ function renderTechs(sch, parent, key) {
 
 // Images du dépôt du projet (README, aperçu GitHub, avatar) : un clic les télécharge sur
 // le serveur et les ajoute aux images du projet ; un second clic les retire.
+// Avec « single » (le logo), c'est un champ image ordinaire, avec le bouton « Charger les
+// logos du dépôt » à côté de « Envoyer une image » et les logos proposés en dessous.
 function renderRepoImages(sch, parent, key, path) {
   const index = Number(/^projects\[(\d+)\]/.exec(path)?.[1]);
   const project = content.projects?.[index];
   const link = String(project?.codeUrl || '').trim();
   const single = Boolean(sch.single);
   const box = el('div', { class: 'repo-images' });
-  const field = el(
-    'div',
-    { class: 'field' },
-    el('span', { class: 'field-label' }, t(sch.label)),
-    box,
-    single
-      ? null
-      : el(
-          'small',
-          { class: 'help' },
-          t('Écrans de téléphone : 2 images au plus. Navigateur et grande image : la première seulement.')
-        )
-  );
-  if (!link) {
-    box.append(
+  let field;
+  if (single) {
+    field = renderImage(sch, parent, key);
+    field.querySelector('.image-row').after(box);
+  } else {
+    field = el(
+      'div',
+      { class: 'field' },
+      el('span', { class: 'field-label' }, t(sch.label)),
+      box,
       el(
         'small',
         { class: 'help' },
-        t(
-          single
-            ? 'Renseigne le lien « Voir le code » pour proposer les logos du dépôt.'
-            : 'Renseigne le lien « Voir le code » pour proposer les images du dépôt.'
-        )
+        t('Écrans de téléphone : 2 images au plus. Navigateur et grande image : la première seulement.')
       )
     );
+  }
+  if (!link) {
+    if (!single) {
+      box.append(
+        el('small', { class: 'help' }, t('Renseigne le lien « Voir le code » pour proposer les images du dépôt.'))
+      );
+    }
     return field;
   }
   const load = el(
@@ -1287,9 +1287,11 @@ function renderRepoImages(sch, parent, key, path) {
     },
     t(single ? 'Charger les logos du dépôt' : 'Charger les images du dépôt')
   );
+  if (single) field.querySelector('.image-controls .row').prepend(load);
   function draw() {
     const found = repoImageCache.get(link);
-    if (!found) return box.replaceChildren(load);
+    if (!found) return single ? box.replaceChildren() : box.replaceChildren(load);
+    if (single) load.remove();
     const images = single ? found.logos : found.images;
     if (!images.length)
       return box.replaceChildren(

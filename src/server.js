@@ -12,7 +12,7 @@ import { createImageSizer, localFile } from './images.js';
 import { CARD_HEIGHT, CARD_WIDTH, photoData, renderCard } from './share-card.js';
 import * as totp from './totp.js';
 import { updateInfo } from './version.js';
-import { downloadImage, fetchRepo, RepoError } from './repo.js';
+import { downloadImage, fetchRepo, isSvg, RepoError, svgToPng } from './repo.js';
 import { createZip, readZip, ZipError } from './zip.js';
 import * as helpers from './helpers.js';
 
@@ -522,7 +522,8 @@ admin.post('/api/repo', requireLogin, sameOrigin, requireAjax, express.json({ li
 });
 
 // Image d'un dépôt choisie dans l'admin : téléchargée puis vérifiée comme un envoi
-// (PNG, JPG, WebP, GIF ou AVIF d'après son contenu), et rangée dans uploads/.
+// (PNG, JPG, WebP, GIF ou AVIF d'après son contenu), et rangée dans uploads/. Un SVG (la
+// plupart des logos) est converti en PNG plutôt que rangé tel quel.
 admin.post(
   '/api/repo-image',
   requireLogin,
@@ -537,8 +538,17 @@ admin.post(
       if (!(err instanceof RepoError)) throw err;
       return res.status(400).json({ error: err.message });
     }
-    const type = IMAGE_TYPES.find((t) => bufferMatchesType(data.subarray(0, 16), t));
-    if (!type) return res.status(400).json({ error: "Ce n'est pas une image PNG, JPG, WebP, GIF ou AVIF." });
+    let type = IMAGE_TYPES.find((t) => bufferMatchesType(data.subarray(0, 16), t));
+    if (!type && isSvg(data)) {
+      try {
+        data = svgToPng(data);
+        type = 'image/png';
+      } catch (err) {
+        if (!(err instanceof RepoError)) throw err;
+        return res.status(400).json({ error: err.message });
+      }
+    }
+    if (!type) return res.status(400).json({ error: "Ce n'est pas une image PNG, JPG, WebP, GIF, AVIF ou SVG." });
     const name = `${Date.now().toString(36)}-${crypto.randomBytes(6).toString('hex')}${UPLOAD_TYPES[type].ext}`;
     await fs.promises.writeFile(path.join(UPLOAD_DIR, name), data);
     res.json({ url: `/uploads/${name}` });

@@ -16,6 +16,9 @@ import {
   readmeImages,
   readmeSummary,
   repoLogos,
+  logoFiles,
+  isSvg,
+  svgToPng,
   RepoError
 } from '../src/repo.js';
 import zlib from 'node:zlib';
@@ -384,4 +387,32 @@ test('repoLogos : logo du README, avatar du projet ou de l’organisation, jamai
     all: ['https://avatars.example/u/1']
   });
   assert.deepEqual(repoLogos(), { best: '', all: [] });
+});
+
+test('logoFiles : « logo.* » d’abord, puis les grandes icônes, près de la racine', () => {
+  assert.deepEqual(
+    logoFiles([
+      'README.md',
+      'node_modules/pkg/logo.png',
+      'static/icone-32.png',
+      'static/icone-512.png',
+      'docs/logo.svg',
+      'src/assets/app-logo-dark.png',
+      'public/favicon.ico',
+      'docs/screenshot.png'
+    ]),
+    ['docs/logo.svg', 'src/assets/app-logo-dark.png', 'static/icone-512.png', 'static/icone-32.png']
+  );
+  assert.deepEqual(logoFiles(null), []);
+});
+
+test('SVG : reconnu puis converti en PNG, sans charger les images qu’il appelle', () => {
+  const svg = Buffer.from(
+    '<?xml version="1.0"?>\n<!-- logo --><svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" viewBox="0 0 10 10"><image xlink:href="file:///etc/passwd" width="10" height="10"/><circle cx="5" cy="5" r="4" fill="red"/></svg>'
+  );
+  assert.ok(isSvg(svg));
+  assert.ok(!isSvg(Buffer.from('<html><svg></svg></html>')));
+  const png = svgToPng(svg, 64);
+  assert.deepEqual([...png.subarray(0, 4)], [0x89, 0x50, 0x4e, 0x47]);
+  assert.throws(() => svgToPng(Buffer.from('<svg')), RepoError);
 });

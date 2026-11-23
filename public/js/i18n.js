@@ -20,9 +20,6 @@ const EN = {
   Logo: 'Logo',
   'Affiché devant le nom. Une image carrée (PNG, WebP…) de préférence.':
     'Shown before the name. A square image (PNG, WebP…) works best.',
-  'Logos du dépôt': 'Repository logos',
-  'Renseigne le lien « Voir le code » pour proposer les logos du dépôt.':
-    'Fill in the “View code” link to get the repository logos.',
   'Charger les logos du dépôt': 'Load the repository logos',
   'Aucun logo trouvé dans ce dépôt.': 'No logo found in this repository.',
   'Téléchargement du logo…': 'Downloading the logo…',
@@ -36,7 +33,9 @@ const EN = {
   'Téléchargement de l’image…': 'Downloading the image…',
   'Image ajoutée — pense à enregistrer': 'Image added — remember to save',
   'Image impossible à ajouter : {message}': 'Could not add the image: {message}',
-  "Ce n'est pas une image PNG, JPG, WebP, GIF ou AVIF.": 'This is not a PNG, JPG, WebP, GIF or AVIF image.',
+  "Ce n'est pas une image PNG, JPG, WebP, GIF, AVIF ou SVG.": 'This is not a PNG, JPG, WebP, GIF, AVIF or SVG image.',
+  'Ce SVG est trop lourd.': 'This SVG is too large.',
+  'Ce SVG est illisible.': 'This SVG cannot be read.',
   "Impossible de télécharger l'image.": 'Could not download the image.',
   'Fichier trop lourd.': 'File too large.',
   'Le site limite les requêtes : réessaie dans un instant.':

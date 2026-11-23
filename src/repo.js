@@ -8,6 +8,7 @@
 import dns from 'node:dns';
 import https from 'node:https';
 import net from 'node:net';
+import { Resvg } from '@resvg/resvg-js';
 import { techFor } from './helpers.js';
 import { VERSION } from './version.js';
 
@@ -155,6 +156,31 @@ export async function downloadImage(url, { allowPrivate = false } = {}) {
     if (err?.status === 429) throw new RepoError('Le site limite les requêtes : réessaie dans un instant.');
     if (err instanceof HttpError) throw new RepoError(`Image introuvable (${err.status}).`);
     throw new RepoError("Impossible de télécharger l'image.");
+  }
+}
+
+// Un SVG (format de la plupart des logos) n'est pas accepté tel quel dans /uploads : il
+// pourrait contenir du script. On le convertit en PNG ; les images qu'il appellerait
+// (fichiers du serveur, adresses externes) sont retirées avant le rendu.
+export function isSvg(data) {
+  const head = data
+    .subarray(0, 1024)
+    .toString('utf8')
+    .replace(/^\uFEFF/, '');
+  return /^\s*(<\?xml[\s\S]*?\?>\s*)?(<!--[\s\S]*?-->\s*|<!DOCTYPE[^>]*>\s*)*<svg[\s>]/i.test(head);
+}
+
+export function svgToPng(data, size = 512) {
+  if (data.length > 2 * 1024 * 1024) throw new RepoError('Ce SVG est trop lourd.');
+  const svg = data
+    .toString('utf8')
+    .replace(/\s(?:xlink:)?href\s*=\s*(["'])(?!data:|#)[^"']*\1/gi, ' ')
+    .replace(/@import[^;]*;?/gi, '');
+  try {
+    const resvg = new Resvg(svg, { fitTo: { mode: 'width', value: size }, font: { loadSystemFonts: true } });
+    return resvg.render().asPng();
+  } catch {
+    throw new RepoError('Ce SVG est illisible.');
   }
 }
 
@@ -409,6 +435,35 @@ function result({
 }
 
 const LOGO_FILE = /(^|[/_.-])(logo|icon|favicon|brand|mark)[^/]*$/i;
+const LOGO_EXT = /\.(png|jpe?g|webp|gif|avif|svg)$/i;
+const SKIPPED_DIRS =
+  /(^|\/)(node_modules|vendor|third[_-]?party|\.git|test|tests|__tests__|fixtures|examples?|\.github\/ISSUE_TEMPLATE)\//i;
+
+// Fichiers du dépôt qui ressemblent à son logo, du plus probable au moins probable :
+// « logo.* » avant « …logo… », puis les icônes (la plus grande d'abord), près de la racine.
+export function logoFiles(paths) {
+  const scored = [];
+  for (const file of paths || []) {
+    if (typeof file !== 'string' || !LOGO_EXT.test(file) || SKIPPED_DIRS.test(file)) continue;
+    const name = file.split('/').pop().toLowerCase();
+    const stem = name.replace(LOGO_EXT, '');
+    let rank;
+    if (stem === 'logo') rank = 0;
+    else if (/logo/.test(stem)) rank = 1;
+    else if (/^(app[-_]?)?(icon|icone)\b|^icon/.test(stem)) rank = 2;
+    else if (/^(favicon|apple-touch-icon|android-chrome)/.test(stem)) rank = 3;
+    else continue;
+    if (/(dark|white|light|mono|inverse|banner|wordmark|text|full)/.test(stem)) rank += 0.5;
+    const px = Math.max(0, ...[...stem.matchAll(/(\d{2,4})/g)].map((m) => Number(m[1])));
+    if (px && px < 64) rank += 2;
+    const depth = file.split('/').length - 1;
+    scored.push({ file, score: rank * 100 + depth * 10 - Math.min(px, 1024) / 128 });
+  }
+  return scored
+    .sort((a, b) => a.score - b.score)
+    .slice(0, 6)
+    .map((s) => s.file);
+}
 const httpsUrl = (value, base) => {
   try {
     const url = new URL(str(value), base);
@@ -421,7 +476,7 @@ const httpsUrl = (value, base) => {
 // Logos possibles d'un dépôt, du plus probable au moins probable : une image du README
 // nommée « logo »/« icon », l'avatar du projet, celui de l'organisation. L'avatar d'une
 // personne est proposé sans être choisi d'office (c'est sa photo, pas le logo du projet).
-export function repoLogos(images = [], { project = [], owner = [], person = [] } = {}) {
+export function repoLogos(images = [], { files = [], project = [], owner = [], person = [] } = {}) {
   const fromReadme = images.filter((src) => {
     try {
       return LOGO_FILE.test(new URL(src).pathname);
@@ -429,7 +484,7 @@ export function repoLogos(images = [], { project = [], owner = [], person = [] }
       return false;
     }
   });
-  const strong = [...fromReadme, ...project, ...owner].filter(Boolean);
+  const strong = [...files, ...fromReadme, ...project, ...owner].filter(Boolean);
   const all = [...new Set([...strong, ...person.filter(Boolean)])].slice(0, 8);
   return { best: strong[0] || '', all };
 }
@@ -438,12 +493,16 @@ const optional = (promise) => promise.catch(() => null);
 
 async function fromGitHub([owner, repo], opts) {
   const base = `https://api.github.com/repos/${encodeURIComponent(owner)}/${encodeURIComponent(repo)}`;
-  const [r, languages, readme] = await Promise.all([
+  const [r, languages, readme, tree] = await Promise.all([
     getJson(base, opts),
     optional(getJson(`${base}/languages`, opts)),
-    optional(getJson(`${base}/readme`, opts))
+    optional(getJson(`${base}/readme`, opts)),
+    optional(getJson(`${base}/git/trees/HEAD?recursive=1`, { ...opts, maxBytes: 8 * MAX_BYTES }))
   ]);
   const fullName = str(r.full_name) || `${owner}/${repo}`;
+  const files = logoFiles(Array.isArray(tree?.tree) ? tree.tree.map((f) => f.path) : []).map(
+    (f) => `https://raw.githubusercontent.com/${fullName}/HEAD/${f.split('/').map(encodeURIComponent).join('/')}`
+  );
   return result({
     provider: 'GitHub',
     name: r.name,
@@ -462,6 +521,7 @@ async function fromGitHub([owner, repo], opts) {
     // Carte d'aperçu que GitHub dessine pour chaque dépôt (ou l'image choisie par l'auteur).
     extraImages: [`https://opengraph.githubassets.com/1/${fullName}`],
     logos: {
+      files,
       [r.owner?.type === 'Organization' ? 'owner' : 'person']: [httpsUrl(r.owner?.avatar_url)]
     }
   });
@@ -469,9 +529,10 @@ async function fromGitHub([owner, repo], opts) {
 
 async function fromGitLab(host, parts, opts) {
   const base = `https://${host}/api/v4/projects/${encodeURIComponent(parts.join('/'))}`;
-  const [r, languages] = await Promise.all([
+  const [r, languages, tree] = await Promise.all([
     getJson(`${base}?license=true`, opts),
-    optional(getJson(`${base}/languages`, opts))
+    optional(getJson(`${base}/languages`, opts)),
+    optional(getJson(`${base}/repository/tree?recursive=true&per_page=100`, opts))
   ]);
   if (!r || typeof r !== 'object' || !('path_with_namespace' in r)) throw new HttpError(404);
   const readmeUrl = str(r.readme_url).replace('/-/blob/', '/-/raw/');
@@ -490,6 +551,9 @@ async function fromGitLab(host, parts, opts) {
     readme: text && { text, rawBase: dirOf(readmeUrl), siteBase: str(r.web_url) },
     extraImages: /^https:\/\//.test(str(r.avatar_url)) ? [str(r.avatar_url)] : [],
     logos: {
+      files: logoFiles(Array.isArray(tree) ? tree.filter((f) => f?.type === 'blob').map((f) => f.path) : []).map(
+        (f) => `${str(r.web_url)}/-/raw/HEAD/${f.split('/').map(encodeURIComponent).join('/')}`
+      ),
       project: [httpsUrl(r.avatar_url, `https://${host}`)],
       [r.namespace?.kind === 'group' ? 'owner' : 'person']: [httpsUrl(r.namespace?.avatar_url, `https://${host}`)]
     }
@@ -505,6 +569,11 @@ async function fromGitea(host, [owner, repo], opts) {
     optional(getJson(`${base}/contents/README.md`, opts))
   ]);
   if (!r || typeof r !== 'object' || !('full_name' in r)) throw new HttpError(404);
+  const branch = encodeURIComponent(str(r.default_branch) || 'main');
+  const tree = await optional(getJson(`${base}/git/trees/${branch}?recursive=true&per_page=10000`, opts));
+  const files = logoFiles(Array.isArray(tree?.tree) ? tree.tree.map((f) => f.path) : []).map(
+    (f) => `${str(r.html_url)}/raw/branch/${branch}/${f.split('/').map(encodeURIComponent).join('/')}`
+  );
   return result({
     provider: host === 'codeberg.org' ? 'Codeberg' : 'Gitea',
     name: r.name,
@@ -518,7 +587,7 @@ async function fromGitea(host, [owner, repo], opts) {
     readme: readme && { text: fromBase64(readme.content), rawBase: dirOf(str(readme.download_url)) },
     extraImages: /^https:\/\//.test(str(r.avatar_url)) ? [str(r.avatar_url)] : [],
     // Gitea ne dit pas si le propriétaire est une organisation : son avatar reste une proposition.
-    logos: { project: [httpsUrl(r.avatar_url)], person: [httpsUrl(r.owner?.avatar_url)] }
+    logos: { files, project: [httpsUrl(r.avatar_url)], person: [httpsUrl(r.owner?.avatar_url)] }
   });
 }
 
